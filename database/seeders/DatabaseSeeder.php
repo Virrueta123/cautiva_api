@@ -5,8 +5,9 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\category;
-use App\Models\modell;
+use App\Models\modell; 
 use Carbon\Carbon;
+use Database\Factories\user_factory;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -29,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
         // registro establecidos
 
-        $first_user = \App\Models\user::factory(1)->create()->first();
+        $first_user =  user_factory::new()->count(1)->create()->first(); 
 
         $timestamp = ["created_at" => Carbon::now()->format("Y-m-d H:i:s"), "updated_at" => Carbon::now()->format("Y-m-d H:i:s")];
 
@@ -46,10 +47,10 @@ class DatabaseSeeder extends Seeder
         }, $list_categories);
 
         $list_models = [
-            ['model_name' => 'Ropa para Niños' ],
-            ['model_name' => 'Ropa para Adultos' ], 
-            ['model_name' => 'Ropa para Jóvenes' ], 
-            ['model_name' => 'Ropa para Mujeres' ]
+            ['model_name' => 'Ropa para Niños','created_by' => $first_user->id],
+            ['model_name' => 'Ropa para Adultos','created_by' => $first_user->id ], 
+            ['model_name' => 'Ropa para Jóvenes','created_by' => $first_user->id ], 
+            ['model_name' => 'Ropa para Mujeres','created_by' => $first_user->id ]
         ];
 
          // Agregar timestamps a cada registro

@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         // registro establecidos
 
-        $first_user = \App\Models\User::factory(1)->create()->first();
+        $first_user = \App\Models\user::factory(1)->create()->first();
 
         $timestamp = ["created_at" => Carbon::now()->format("Y-m-d H:i:s"), "updated_at" => Carbon::now()->format("Y-m-d H:i:s")];
 

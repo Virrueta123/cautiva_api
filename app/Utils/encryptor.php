@@ -3,7 +3,7 @@ namespace App\Utils;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
-class Encryptor
+class encryptor
 {
    public static function method()
    {

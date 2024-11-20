@@ -20,11 +20,13 @@ return new class extends Migration
             $table->string('product_name')->unique();
             $table->decimal('product_purchase', 10, 2)->unsigned();
             $table->decimal('product_sales', 10, 2)->unsigned();
+            $table->decimal('product_profit', 10, 2)->unsigned();
             $table->integer('product_stock')->unsigned();
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
+            $table->bigInteger('barcode')->unique()->nullable();
 
             // Claves foráneas
             $table->foreign('category_id')

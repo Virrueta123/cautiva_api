@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\login_resource;
-use App\Models\User;
+use App\Models\user;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -48,7 +48,7 @@ class auth_controller extends Controller
             return response()->json(['errors' => $validator->errors()->all()], 401);
         }
 
-        $user = User::create([
+        $user = user::create([
             'name' => $request->name,
             'username' => $request->username,
             'password' => bcrypt($request->password),
@@ -86,7 +86,7 @@ class auth_controller extends Controller
                 ]);
             }
 
-            $user = User::where('username', $request->username)->first();
+            $user = user::where('username', $request->username)->first();
             $token = $user->createToken('auth_token')->plainTextToken;
  
             return response()->json([ 
@@ -122,7 +122,7 @@ class auth_controller extends Controller
 
     public function user(Request $request)
     {
-        $user = User::all();
+        $user = user::all();
         return response()->json([ 
             'success' => true,
             'message' => 'Error al intentar autenticar',

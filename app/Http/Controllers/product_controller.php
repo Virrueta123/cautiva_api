@@ -7,6 +7,7 @@ use App\Models\product;
 use App\Rules\price_decimal;
 use App\Utils\Encryptor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class product_controller extends Controller
@@ -16,7 +17,17 @@ class product_controller extends Controller
      */
     public function index()
     {
-        //
+        try { 
+            $products = product::with('category',"model")->get();
+            return product_resource::collection($products);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'success' => false,
+                'message' => 'Hubo un error al obtener los productos',
+                'code' => 500,
+            ], 500);
+        }
     }
 
     /**
@@ -24,7 +35,10 @@ class product_controller extends Controller
      */
     public function store(Request $request)
     {
+        
         try {
+            $userId = Auth::id(); 
+
             $validator = Validator::make($request->all(), [
                 'category_id' => 'required',
                 'model_id' => 'required',
@@ -38,7 +52,7 @@ class product_controller extends Controller
                 return response()->json([
                     'error' =>   implode(' | ', $validator->errors()->all()),
                     'success' => false,
-                    'message' => 'Error al intentar autenticar',
+                    'message' => 'El producto no se ha creado',
                     'code' => 400,
                 ], 400);
             }
@@ -47,8 +61,12 @@ class product_controller extends Controller
             
             $validaterData["category_id"] = Encryptor::decrypt($request->input( "category_id" ));
             $validaterData["model_id"] = Encryptor::decrypt($request->input( "model_id" ));
-  
+            $validaterData["user_id"] = $userId; //get authenticated user id from token
+             
 
+            //parse string
+            $validaterData["product_profit"] = $validaterData["product_sales"] - $validaterData["product_purchase"];
+  
             $product = product::create($validaterData);
 
             if(!$product){
@@ -86,7 +104,35 @@ class product_controller extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $product = product::find(Encryptor::decrypt($id));
+
+            if(!$product){
+                return response()->json([
+                    'error' =>  "Producto no encontrado",
+                    'success' => false,
+                    'message' => 'Producto no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
+            return response()->json([
+                'error' =>   null,
+                'success' => true,
+                'message' => 'Producto mostrado exitosamente',
+                'code' => 200,
+                'data' => product_resource::make($product),
+            ], 200);
+
+        }catch(\Throwable $e) {
+            $code = 401;
+            return response()->json([
+                'error' => "Error al mostrar el producto",
+                'success' => false,
+                'message' => 'Error al mostrar el producto',
+                'code' => $code,
+            ], $code);
+        }
     }
 
     /**

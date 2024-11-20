@@ -16,7 +16,7 @@ class model_resource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'identifier' => Encryptor::encrypt($this->model_id),
+            'identifier' => encryptor::encrypt($this->model_id),
             'model_name' => $this->model_name,
         ];
     }

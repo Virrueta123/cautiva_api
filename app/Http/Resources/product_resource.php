@@ -16,7 +16,7 @@ class product_resource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'identifier' => Encryptor::encrypt($this->product_id), 
+            'identifier' => encryptor::encrypt($this->product_id), 
             'product_name' => $this->product_name,
             'product_purchase' => $this->product_purchase,
             'product_profit' => $this->product_profit,

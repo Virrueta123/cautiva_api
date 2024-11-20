@@ -16,7 +16,7 @@ class category_resource extends JsonResource
     public function toArray(Request $request): array
     { 
         return [
-            'identifier' => Encryptor::encrypt($this->category_id),
+            'identifier' => encryptor::encrypt($this->category_id),
             'category_name' => $this->category_name,
         ];
     }

@@ -16,7 +16,7 @@ class login_resource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'identifier' => Encryptor::encrypt($this->id),
+            'identifier' => encryptor::encrypt($this->id),
             'name' => $this->name, 
         ];
     }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\product_resource;
 use App\Models\product;
 use App\Rules\price_decimal;
-use App\Utils\Encryptor;
+use App\Utils\encryptor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -59,8 +59,8 @@ class product_controller extends Controller
 
             $validaterData = $validator->validated();
             
-            $validaterData["category_id"] = Encryptor::decrypt($request->input( "category_id" ));
-            $validaterData["model_id"] = Encryptor::decrypt($request->input( "model_id" ));
+            $validaterData["category_id"] = encryptor::decrypt($request->input( "category_id" ));
+            $validaterData["model_id"] = encryptor::decrypt($request->input( "model_id" ));
             $validaterData["user_id"] = $userId; //get authenticated user id from token
              
 

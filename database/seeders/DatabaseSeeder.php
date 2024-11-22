@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\category;
 use App\Models\modell; 
 use Carbon\Carbon;
+use Database\Factories\product_factory;
 use Database\Factories\user_factory;
 use Illuminate\Database\Seeder;
 
@@ -60,5 +61,8 @@ class DatabaseSeeder extends Seeder
 
         category::insert($list_categories);
         modell::insert($list_models);
+
+        product_factory::new()->count(200)->create();
+        
     }
 }

@@ -32,6 +32,10 @@ class product extends Model
         return $this->belongsTo(modell::class, 'model_id');
     }
 
+    public function user(){
+        return $this->belongsTo(user::class, 'created_by');
+    }
+
     // Generar código de barras automáticamente al crear producto
     protected static function booted()
     {

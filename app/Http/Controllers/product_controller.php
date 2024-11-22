@@ -16,7 +16,7 @@ class product_controller extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index( Request $request)
+    public function index(Request $request)
     {
         try {
 
@@ -26,23 +26,23 @@ class product_controller extends Controller
             if ($request->has('search')) {
                 $query->where('product_name', 'like', '%' . $request->get('search') . '%');
             }
-        
+
             // Paginación
             $perPage = $request->get('per_page', 10); // Número de elementos por página (opcional)
             $data = $query->paginate($perPage);
-        
-           
 
-               return response()->json([
+
+
+            return response()->json([
                 "data" => [
                     "last_page" => $data->lastPage(),
                     "per_page" => $perPage,
                     "current_page" => $data->currentPage(),
-                    "total" => $data->total(), 
+                    "total" => $data->total(),
                     "data" => product_resource::collection($data->items()),
-                
+
                 ],
-                'success' => true, 
+                'success' => true,
                 'code' => 200,
             ], 200);
 
@@ -74,6 +74,8 @@ class product_controller extends Controller
         try {
             $userId = Auth::id();
 
+
+
             $validator = Validator::make($request->all(), [
                 'category_id' => 'required',
                 'model_id' => 'required',
@@ -98,9 +100,8 @@ class product_controller extends Controller
             $validaterData["model_id"] = encryptor::decrypt($request->input("model_id"));
             $validaterData["created_by"] = $userId; //get authenticated user id from token
 
-
-            //parse string
             $validaterData["product_profit"] = $validaterData["product_sales"] - $validaterData["product_purchase"];
+
 
             $product = product::create($validaterData);
 
@@ -118,7 +119,7 @@ class product_controller extends Controller
                 'success' => true,
                 'message' => 'Producto creado exitosamente',
                 'code' => 200,
-                'data' => product_resource::make($product),
+                'data' => show_product_resource::make($product),
             ], 200);
         } catch (\Throwable $th) {
             $code = 401;
@@ -189,8 +190,8 @@ class product_controller extends Controller
      */
 
     public function barcode(string $barcode)
-    {  
-         try {
+    {
+        try {
             $product = Product::where('barcode', $barcode)->first();
 
             if (!$product) {
@@ -209,7 +210,78 @@ class product_controller extends Controller
                 'code' => 200,
                 'data' => product_resource::make($product),
             ], 200);
+        } catch (\Throwable $e) {
+            $code = 401;
+            return response()->json([
+                'error' => "Error al mostrar el producto",
+                'success' => false,
+                'message' => 'Error al mostrar el producto',
+                'code' => $code,
+            ], $code);
+        }
+    }
 
+    public function barcode_print($identifier)
+    {
+        try {
+            $product = Product::find(Encryptor::decrypt($identifier) );
+ 
+            // URL a la que deseas hacer la solicitud
+            $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
+ 
+            // Datos que deseas enviar en la solicitud POST
+            $postData = array(
+                'barcode' => $product->barcode, 
+            );
+
+            // Inicializar cURL
+            $ch = curl_init();
+
+            // Establecer la URL de la solicitud
+            curl_setopt($ch, CURLOPT_URL, $url);
+
+            // Establecer el método de la solicitud como POST
+            curl_setopt($ch, CURLOPT_POST, true);
+
+            // Convertir los datos a formato de cadena y establecerlos como datos de POST
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+
+            // Si necesitas agregar encabezados u otros datos a la solicitud, aquí es donde lo harías
+            // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer TOKEN'));
+
+            // Establecer que deseas recibir la respuesta como una cadena en lugar de imprimirla directamente
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            // Ejecutar la solicitud y obtener la respuesta
+            $response = curl_exec($ch);
+
+            
+
+            // Verificar si hubo errores
+            if (curl_errno($ch)) {
+                echo 'Error: ' . curl_error($ch);
+            }
+
+            // Cerrar la conexión cURL
+            curl_close($ch);
+
+
+            if (!$product) {
+                return response()->json([
+                    'error' =>  "imprimio con exito el codigo",
+                    'success' => false,
+                    'message' => 'Producto no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
+            return response()->json([
+                'error' =>   null,
+                'success' => true,
+                'message' => 'Codigo ',
+                'code' => 200,
+                'data' => product_resource::make($product),
+            ], 200);
         } catch (\Throwable $e) {
             $code = 401;
             return response()->json([

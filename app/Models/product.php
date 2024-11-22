@@ -21,7 +21,8 @@ class product extends Model
         'product_sales',
         'product_stock',
         "barcode",
-        "product_profit"
+        "product_profit",
+        "created_by"
     ];
 
     public function category(){

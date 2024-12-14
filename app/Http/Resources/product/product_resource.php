@@ -4,6 +4,7 @@ namespace App\Http\Resources\product;
 
 use App\Http\Resources\category_resource;
 use App\Http\Resources\model_resource;
+use App\Http\Resources\size\select_size_resource;
 use App\Utils\encryptor;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -27,7 +28,8 @@ class product_resource extends JsonResource
             "barcode" => $this->barcode,
             'created_at' => $this->created_at,
             'category' => category_resource::make($this->category), 
-            'model' => model_resource::make($this->model)
+            'model' => model_resource::make($this->model),
+            'size' => select_size_resource::make($this->size),
         ];
     }
 }

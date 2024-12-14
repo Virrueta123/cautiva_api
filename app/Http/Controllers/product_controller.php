@@ -30,9 +30,7 @@ class product_controller extends Controller
             // Paginación
             $perPage = $request->get('per_page', 10); // Número de elementos por página (opcional)
             $data = $query->paginate($perPage);
-
-
-
+ 
             return response()->json([
                 "data" => [
                     "last_page" => $data->lastPage(),
@@ -45,16 +43,7 @@ class product_controller extends Controller
                 'success' => true,
                 'code' => 200,
             ], 200);
-
-            // return response()->json([
-            //     'error' =>  "Vuelva a registrar",
-            //     'success' => false,
-            //     'message' => 'Error al crear el producto',
-            //     'code' => 400,
-            // ], 400);
-
-            // $products = product::with('category', "model")->get();
-            // return product_resource::collection($products);
+ 
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -73,16 +62,14 @@ class product_controller extends Controller
 
         try {
             $userId = Auth::id();
-
-
-
+ 
             $validator = Validator::make($request->all(), [
                 'category_id' => 'required',
                 'model_id' => 'required',
+                'size_id' => 'required',
                 'product_name' => 'required|string|max:255|unique:products,product_name',
                 'product_purchase' => ["numeric", "min:0", "required", new price_decimal],
-                'product_sales' => ["numeric", "min:0", "required", new price_decimal], //10.00
-                'product_stock' => 'required|numeric|min:1'
+                'product_sales' => ["numeric", "min:0", "required", new price_decimal]
             ]);
 
             if ($validator->fails()) {
@@ -97,7 +84,9 @@ class product_controller extends Controller
             $validaterData = $validator->validated();
 
             $validaterData["category_id"] = encryptor::decrypt($request->input("category_id"));
+            $validaterData["product_stock"] = 1;
             $validaterData["model_id"] = encryptor::decrypt($request->input("model_id"));
+            $validaterData["size_id"] = encryptor::decrypt($request->input("size_id"));
             $validaterData["created_by"] = $userId; //get authenticated user id from token
 
             $validaterData["product_profit"] = $validaterData["product_sales"] - $validaterData["product_purchase"];

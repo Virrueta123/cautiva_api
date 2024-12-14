@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('username')->unique();
-            $table->enum('type_user', ['admin', 'recepcionista', 'vendedor']); // Add username column
-  
-            $table->string('password');
-            $table->rememberToken();
+        Schema::create('configs', function (Blueprint $table) {
+            $table->id('config_id'); // bigint UNSIGNED AUTO_INCREMENT
+            $table->string('series_invoice', 12)->nullable();
+            $table->string('series_ticket', 12)->nullable();
+            $table->string('series_note', 12)->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('configs');
     }
 };

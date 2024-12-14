@@ -189,12 +189,14 @@ return [
     */
 
     'attributes' => [
+        //atributes for products
         'category_id' => 'categoria',
         'model_id' => 'modelo de ropa',
         'product_name' => 'nombre del producto',
         'product_purchase' => "precio de compra",
         'product_sales' => "precio de venta", //10.00
-        'product_stock' => 'cantidad' 
+        'product_stock' => 'cantidad',
+        "size_id" => "talla"
     ],
 
 ];

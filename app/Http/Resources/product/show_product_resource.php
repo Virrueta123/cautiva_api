@@ -4,6 +4,7 @@ namespace App\Http\Resources\product;
 
 use App\Http\Resources\category_resource;
 use App\Http\Resources\model_resource;
+use App\Http\Resources\size\select_size_resource;
 use App\Http\Resources\user\user_resource;
 use App\Utils\encryptor;
 use Illuminate\Http\Request;
@@ -29,7 +30,8 @@ class show_product_resource extends JsonResource
             'created_at' => $this->created_at,
             'category' => category_resource::make($this->category), 
             'model' => model_resource::make($this->model),
-            'user' => user_resource::make($this->user)
+            'user' => user_resource::make($this->user),
+            'size' => select_size_resource::make($this->size),
         ];
     }
 }

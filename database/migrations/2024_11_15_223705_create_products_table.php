@@ -26,7 +26,8 @@ return new class extends Migration
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
-            $table->bigInteger('barcode')->unique()->nullable();
+            $table->string('barcode',50)->unique()->nullable();
+            $table->unsignedInteger('size_id')->nullable();
 
             // Claves foráneas
             $table->foreign('category_id')
@@ -40,6 +41,10 @@ return new class extends Migration
             $table->foreign('created_by')
                 ->references('id')
                 ->on('users');
+
+            $table->foreign('size_id')
+                ->references('size_id')
+                ->on('sizes');
         });
     }
 

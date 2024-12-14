@@ -22,10 +22,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/register', [auth_controller::class, 'register']);
 Route::post('/authentication', [auth_controller::class, 'login']);
 
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [auth_controller::class, 'logout']);
     Route::get('/user', [auth_controller::class, 'user']);  
     require __DIR__.'/api_route/product_route.php'; 
     require __DIR__.'/api_route/model_route.php'; 
     require __DIR__.'/api_route/category_route.php';
+    require __DIR__.'/api_route/account_route.php';
+    require __DIR__.'/api_route/client_route.php';
+    require __DIR__.'/api_route/api_peru_route.php';
+    require __DIR__.'/api_route/sale_route.php';
+    require __DIR__.'/api_route/box_route.php';
+    require __DIR__.'/api_route/size_route.php';
 });

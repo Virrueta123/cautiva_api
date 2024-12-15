@@ -5,21 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\box;
 use App\Models\client;
 use App\Models\config;
+use App\Models\dt_sales;
 use App\Models\sale;
-use App\Services\GreenterService;
+use App\Services\greenter_service;
 use App\Utils\correlativo;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Blade;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Utils\encryptor;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class sale_controller extends Controller
 {
     protected $greenterService;
 
-    public function __construct(GreenterService $greenterService)
+    public function __construct(greenter_service $greenterService)
     {
         $this->greenterService = $greenterService;
     }
@@ -54,8 +56,9 @@ class sale_controller extends Controller
             $tipo_documento = $datax["type_of_receipt"];
 
             //totales
-            $total_sale = $datax["total"];
-            $subtotal_sale = $datax["subtotal"];
+            $total_sale = number_format($datax["total"], 2);
+            $subtotal_sale = number_format($datax["subtotal"], 2);
+            
 
             //descuentos
             $amount_discount = $datax["amount_discount"];
@@ -70,7 +73,7 @@ class sale_controller extends Controller
             }
 
             $sale = new sale();
-            $sale->client_id = encryptor::encrypt($datax["client_id"]);
+            $sale->client_id = $client->client_id;
             $sale->box_id = $box_id;
             $sale->created_by = $userId;
             $sale->tipo_documento = $tipo_documento;
@@ -80,7 +83,7 @@ class sale_controller extends Controller
             $sale->setRazonSocial = $tipo_documento == "F" ? $client->bussiness_name : null;
             $sale->setMtoOperGravadas = 0;
             $sale->setMtoOperExoneradas = $total_sale;
-            $sale->MtoIGV = 0;
+            $sale->setMtoIGV = 0;
             $sale->setTotalImpuestos = 0;
             $sale->setValorVenta = $total_sale;
             $sale->setSubTotal = $total_sale;
@@ -102,7 +105,7 @@ class sale_controller extends Controller
                 array_push(
                     $create_dt_sale,
                     array(
-                        "product_id" => encryptor::encrypt($product["identifier"]),
+                        "product_id" => encryptor::decrypt($product["identifier"]),
                         "created_by" => $userId,
                         "Cantidad" => 1,
                         "PorcentajeIgv" => 0,
@@ -122,7 +125,7 @@ class sale_controller extends Controller
             }
 
             //emitir a la sunat 
-            $client_repeit = $this->createClientInvoice(
+            $client_repeit = $this->greenterService->createClientInvoice(
                 $tipo_documento,
                 $tipo_documento == "F" ? $client->ruc : $client->dni,
                 $tipo_documento == "F" ? $client->bussiness_name : $client->name . " " . $client->lastname
@@ -171,15 +174,28 @@ class sale_controller extends Controller
                     $sale->correlativo,
                     $total,
                 );
-                $result = $this->greenterService->sendInvoice($invoice);
+                $result = $this->greenterService->sendTicket($invoice);
 
                 if ($result["success"]) {
+
+                $sale->estado = "A";
+                $sale->observations = $result["observations"];
+                $sale->message_error = $result["message"];
+                $sale->codigo_error = $result["code"];
+                $sale->save();
+
+                $create_dt_sale = array_map(function ($sales) use ($sale) {
+                    return array_merge($sales, ['sale_id' => $sale->sale_id]);
+                }, $create_dt_sale);
+
+                dt_sales::insert($create_dt_sale);
+
                     return response()->json([
                         'error' =>   null,
                         'success' => true,
                         'message' => 'Venta cargado exitosamente',
                         'code' => 200,
-                        'data' => $sale,
+                        'data' => $result,
                     ], 200);
         
                 } else {
@@ -188,7 +204,7 @@ class sale_controller extends Controller
                         'success' => false,
                         'message' => 'Error al crear la venta',
                         'code' => 200,
-                        'data' => $sale,
+                        'data' =>  $result,
                     ], 500); 
                 }
                     break;
@@ -206,15 +222,7 @@ class sale_controller extends Controller
 
 
 
-
-
-
-            //   `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-
-            //   `observations` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-            //   `message_error` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-            //   `codigo_error` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-
+ 
 
 
             return response()->json([
@@ -332,14 +340,15 @@ class sale_controller extends Controller
 
     public function getSerie($type_of_receipt)
     {
-        $config = config::where('config_id', 1)->first();
+        $config = config::find(1);
+     
 
-        switch ($config->type_of_receipt) {
+        switch ($type_of_receipt) {
             case 'F':
                 return $config->series_invoice;
                 break;
             case 'B':
-                return $config->series_ticket;
+                return $config->series_ticket;  
                 break;
             case 'N':
                 return $config->series_note;

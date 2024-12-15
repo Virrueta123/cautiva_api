@@ -1,6 +1,6 @@
 <?php
 return [
-    'cert' => storage_path('certificates/certificate.pem'),
+    'cert' => 'certificates/certificate.pem',
     'username_sol' =>  env('USERNAME_SOL'),
     'password_sol' =>  env('PASSWORD_SOL'),
     'ruc_sol' => env('RUC_SOL'),

@@ -216,6 +216,7 @@ class product_controller extends Controller
             $product = Product::find(Encryptor::decrypt($identifier) );
  
             // URL a la que deseas hacer la solicitud
+            // $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
             $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
  
             // Datos que deseas enviar en la solicitud POST

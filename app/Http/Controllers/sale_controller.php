@@ -26,7 +26,6 @@ class sale_controller extends Controller
         $this->greenterService = $greenterService;
     }
 
-
     /**
      * Display a listing of the resource.
      */
@@ -58,7 +57,7 @@ class sale_controller extends Controller
             //totales
             $total_sale = number_format($datax["total"], 2);
             $subtotal_sale = number_format($datax["subtotal"], 2);
-            
+
 
             //descuentos
             $amount_discount = $datax["amount_discount"];
@@ -167,82 +166,77 @@ class sale_controller extends Controller
                     }
                     break;
                 case "B":
-                $invoice = $this->greenterService->createTicket(
-                    $client_repeit,
-                    $create_dt_sale,
-                    $sale->serie,
-                    $sale->correlativo,
-                    $total,
-                );
-                $result = $this->greenterService->sendTicket($invoice);
+                    $invoice = $this->greenterService->createTicket(
+                        $client_repeit,
+                        $create_dt_sale,
+                        $sale->serie,
+                        $sale->correlativo,
+                        $total,
+                    );
+                    $result = $this->greenterService->sendTicket($invoice);
 
-                if ($result["success"]) {
+                    if ($result["success"]) {
 
-                $sale->estado = "A";
-                $sale->observations = $result["observations"];
-                $sale->message_error = $result["message"];
-                $sale->codigo_error = $result["code"];
-                $sale->save();
+                        $sale->estado = "A";
+                        $sale->observations = $result["observations"];
+                        $sale->message_error = $result["message"];
+                        $sale->codigo_error = $result["code"];
+                        $sale->save();
 
-                $create_dt_sale = array_map(function ($sales) use ($sale) {
-                    return array_merge($sales, ['sale_id' => $sale->sale_id]);
-                }, $create_dt_sale);
+                        $create_dt_sale = array_map(function ($sales) use ($sale) {
+                            return array_merge($sales, ['sale_id' => $sale->sale_id]);
+                        }, $create_dt_sale);
 
-                dt_sales::insert($create_dt_sale);
+                        dt_sales::insert($create_dt_sale);
 
-                    return response()->json([
-                        'error' =>   null,
-                        'success' => true,
-                        'message' => 'Venta cargado exitosamente',
-                        'code' => 200,
-                        'data' => $result,
-                    ], 200);
-        
-                } else {
-                    return response()->json([
-                        'error' =>   null,
-                        'success' => false,
-                        'message' => 'Error al crear la venta',
-                        'code' => 200,
-                        'data' =>  $result,
-                    ], 500); 
-                }
+                        return response()->json([
+                            'error' =>   null,
+                            'success' => true,
+                            'message' => 'Venta cargado exitosamente',
+                            'code' => 200,
+                            'data' => $result,
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'error' =>   null,
+                            'success' => false,
+                            'message' => 'Error al crear la venta',
+                            'code' => 200,
+                            'data' =>  "",
+                        ], 500);
+                    }
                     break;
                 case "N":
-                    // $client_repeit = $this->createClientInvoice(
-                    //     $tipo_documento,
-                    //     $tipo_documento == "F" ? $client->ruc : $client->dni,
-                    //     $tipo_documento == "F" ? $client->bussiness_name : $client->name . " " . $client->lastname
-                    // );
+                    $sale->estado = "A"; 
+                  
+                    if(!$sale->save()){ 
+                        return response()->json([
+                            'error' =>   null,
+                            'success' => false,
+                            'message' => 'Error al crear la venta',
+                            'code' => 200, 
+                        ]);
+                    }
+
+                    $create_dt_sale = array_map(function ($sales) use ($sale) {
+                        return array_merge($sales, ['sale_id' => $sale->sale_id]);
+                    }, $create_dt_sale);
+
+                    dt_sales::insert($create_dt_sale);
+ 
+                        return response()->json([
+                            'error' =>   null,
+                            'success' => true,
+                            'message' => 'Venta generada correctamente exitosamente',
+                            'code' => 200,
+                            'data' =>  encryptor::encrypt($sale->sale_id),
+                        ], 200);
+              
                     break;
             }
-
-
-
-
-
-
  
-
-
-            return response()->json([
-                'error' =>   null,
-                'success' => true,
-                'message' => 'Venta cargado exitosamente',
-                'code' => 200,
-                'data' =>   count($datax["products"]),
-            ], 200);
-
-
-
-
-            return response()->json([
-                'error' =>   null,
-                'success' => true,
-                'message' => 'Venta cargado exitosamente',
-                'code' => 200,
-                'data' => $product,
-            ], 200);
+         
+        
         } catch (\Throwable $th) {
             $code = 401;
             return response()->json([
@@ -257,9 +251,9 @@ class sale_controller extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $identifier)
     {
-        //
+        $sales = Sale::find(encryptor::decrypt($identifier));
     }
 
     /**
@@ -341,14 +335,14 @@ class sale_controller extends Controller
     public function getSerie($type_of_receipt)
     {
         $config = config::find(1);
-     
+
 
         switch ($type_of_receipt) {
             case 'F':
                 return $config->series_invoice;
                 break;
             case 'B':
-                return $config->series_ticket;  
+                return $config->series_ticket;
                 break;
             case 'N':
                 return $config->series_note;

@@ -77,18 +77,18 @@ class greenter_service
                 array_push(
                     $SaleDetail,
                     (new SaleDetail())
-                        ->setCodProducto($item["code"])
-                        ->setUnidad($item["unidad"])
-                        ->setCantidad($item["cantidad"])
-                        ->setDescripcion($item['descripcion'])
-                        ->setMtoBaseIgv($item['importe'])
+                        ->setCodProducto($item["CodProducto"])
+                        ->setUnidad("NIU")
+                        ->setCantidad($item["Cantidad"])
+                        ->setDescripcion($item['Descripcion'])
+                        ->setMtoBaseIgv($item['MtoValorVenta'])
                         ->setPorcentajeIgv(0)
                         ->setIgv(0)
                         ->setTipAfeIgv('20')
                         ->setTotalImpuestos(0)
-                        ->setMtoValorVenta($item['Importe'])
-                        ->setMtoValorUnitario($item['Precio'])
-                        ->setMtoPrecioUnitario($item['Precio'])
+                        ->setMtoValorVenta($item['MtoValorVenta'])
+                        ->setMtoValorUnitario($item['MtoPrecioUnitario'])
+                        ->setMtoPrecioUnitario($item['MtoPrecioUnitario'])
                 );
             }
 

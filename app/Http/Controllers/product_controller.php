@@ -26,6 +26,7 @@ class product_controller extends Controller
             if ($request->has('search')) {
                 $query->where('product_name', 'like', '%' . $request->get('search') . '%');
             }
+            $query->orderBy('product_id', 'DESC');
 
             // Paginación
             $perPage = $request->get('per_page', 10); // Número de elementos por página (opcional)
@@ -68,8 +69,8 @@ class product_controller extends Controller
                 'model_id' => 'required',
                 'size_id' => 'required',
                 'product_name' => 'required|string|max:255|unique:products,product_name',
-                'product_purchase' => ["numeric", "min:0", "required", new price_decimal],
-                'product_sales' => ["numeric", "min:0", "required", new price_decimal]
+                'product_purchase' => ["numeric", "min:1", "required", new price_decimal],
+                'product_sales' => ["numeric", "min:1", "required", new price_decimal]
             ]);
 
             if ($validator->fails()) {
@@ -213,7 +214,18 @@ class product_controller extends Controller
     public function barcode_print($identifier)
     {
         try {
-            $product = Product::find(Encryptor::decrypt($identifier) );
+            $product = Product::find(Encryptor::decrypt($identifier));
+
+            
+            if (!$product) {
+                return response()->json([
+                    'error' =>  "Error al imprimir",
+                    'success' => false,
+                    'message' => 'Producto no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
  
             // URL a la que deseas hacer la solicitud
             // $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
@@ -222,6 +234,8 @@ class product_controller extends Controller
             // Datos que deseas enviar en la solicitud POST
             $postData = array(
                 'barcode' => $product->barcode, 
+                'price' => $product->product_sales,
+                'product_name' => $product->product_name ." " . $product->size->size_name,
             );
 
             // Inicializar cURL
@@ -253,25 +267,16 @@ class product_controller extends Controller
             }
 
             // Cerrar la conexión cURL
-            curl_close($ch);
-
-
-            if (!$product) {
-                return response()->json([
-                    'error' =>  "imprimio con exito el codigo",
-                    'success' => false,
-                    'message' => 'Producto no encontrado',
-                    'code' => 404,
-                ], 404);
-            }
+            curl_close($ch); 
 
             return response()->json([
                 'error' =>   null,
                 'success' => true,
-                'message' => 'Codigo ',
+                'message' => 'imprimio con exito el codigo',
                 'code' => 200,
                 'data' => product_resource::make($product),
             ], 200);
+
         } catch (\Throwable $e) {
             $code = 401;
             return response()->json([

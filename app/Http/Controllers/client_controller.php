@@ -168,13 +168,15 @@ class client_controller extends Controller
     
             // Actualizar cliente
             $client->update($validatedData);
+
+            $client = client::find(encryptor::decrypt($id));
     
             return response()->json([
                 'error' => null,
                 'success' => true,
                 'message' => 'Cliente actualizado exitosamente',
                 'code' => 200,
-                'data' => $client,
+                'data' => new client_select_resource($client),
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

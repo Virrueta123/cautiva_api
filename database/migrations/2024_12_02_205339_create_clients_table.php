@@ -17,10 +17,7 @@ return new class extends Migration
             $table->string('lastname')->nullable();
             $table->string('dni')->nullable();
             $table->string('address')->nullable();
-            $table->integer('phone')->nullable();
-            $table->string('departament')->nullable();
-            $table->string('province')->nullable();
-            $table->string('district')->nullable();
+            $table->integer('phone')->nullable(); 
             $table->string('ruc')->nullable();
             $table->string('bussiness_name')->nullable();
             $table->char('is_default', 1)->default('N');

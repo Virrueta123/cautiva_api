@@ -21,7 +21,7 @@ return new class extends Migration
             $table->char('tipo_documento', 1)->nullable();
             $table->string('serie', 255)->nullable();
             $table->string('correlativo', 255)->nullable();
-            $table->integer('setRuc')->nullable();
+            $table->string('setRuc',15)->nullable();
             $table->string('setRazonSocial', 255)->nullable(); 
             $table->string('setDireccion', 255)->nullable();
             $table->string('setCodLocal', 255)->nullable();

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('reference')->nullable(); // Columna de referencia
             $table->timestamp('closing_date')->nullable(); // Fecha de cierre
             $table->timestamp('opening_date')->nullable(); // Fecha de apertura
-            $table->char('status', 1)->nullable(); // Estado (char de 1)
+            $table->char('status', 1)->nullable()->default('A'); // Estado (char de 1)
             $table->decimal('initial_balance', 10, 2)->nullable(); // Balance inicial
             $table->decimal('final_balance', 10, 2)->nullable(); // Balance final
             $table->unsignedBigInteger('created_by')->nullable(); // Relación con usuarios

@@ -196,7 +196,16 @@ return [
         'product_purchase' => "precio de compra",
         'product_sales' => "precio de venta", //10.00
         'product_stock' => 'cantidad',
-        "size_id" => "talla"
+        "size_id" => "talla",
+        //atributes for clients
+        'name' => 'nombre',
+        'lastname' => 'apellido',
+        'dni' => 'dni',
+        'address' => 'direccion',
+        'ruc' => 'ruc',
+        'phone' => 'telefono',
+        'bussiness_name' => 'nombre de la empresa',
+
     ],
 
 ];

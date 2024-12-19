@@ -28,6 +28,7 @@ class client_controller extends Controller
                         ->orWhere('dni', 'like', $searchTerm);
                 });
             }
+            $query->orderBy('client_id', 'DESC')->where("is_default","N"); 
             // Paginación
             $perPage = $request->get('per_page', 10); // Número de elementos por página (opcional)
             $data = $query->paginate($perPage);
@@ -67,10 +68,10 @@ class client_controller extends Controller
                 'name' => 'required|unique:clients,name',
                 'lastname' => 'required|unique:clients,lastname',
                 'dni' => 'required|string|max:8|unique:clients,dni',
-                'address' => "required|string",
-                'ruc' => "required|string|max:8|unique:clients,ruc",
-                'phone' => 'required|numeric|min:1',
-                'bussiness_name' => 'required|string|unique:clients,bussiness_name',
+                'address' => "nullable|string",
+                'ruc' => "nullable|string|max:8|unique:clients,ruc",
+                'phone' => 'nullable|numeric|min:1',
+                'bussiness_name' => 'nullable|string|unique:clients,bussiness_name',
             ]);
 
             if ($validator->fails()) {
@@ -101,7 +102,7 @@ class client_controller extends Controller
                 'success' => true,
                 'message' => 'Cliente creado exitosamente',
                 'code' => 200,
-                'data' => client_select_resource::collection($client),
+                'data' => new client_select_resource($client),
             ], 200);
             
         } catch (\Throwable $th) {

@@ -5,6 +5,13 @@
 
     <title>Cash Time</title>
     <style>
+        :root {
+            --color-primary: #F6187F;
+            --color-secondary: #0076DA;
+            --fontColorPrimary: #414141;
+            --fontColorSecondary: #3c3c3c;
+        }
+
         * {
             margin: 0px;
             padding: 0px;
@@ -12,19 +19,110 @@
 
         body {
             font-family: Arial, sans-serif;
-            margin-left: 22px;
-            margin-right: 22px;
+            margin-left: 32px;
+            margin-right: 32px;
+            margin-top: 20px;
+
         }
 
+        .tableHeader {
+            width: 100%;
+            padding-bottom: 10px;
+        }
+
+        .tableHeader .logo_img {
+            width: 110px;
+        }
+
+        .tableHeader .logo_text {
+            padding: 0px;
+            font-size: 26px;
+            font-family: Arial, sans-serif;
+            color: var(--color-primary);
+        }
+
+        .tableHeader .receipt_logo {
+            width: 525px;
+        }
+
+        .tableHeader .sub_logo {
+            padding: 0px;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            color: var(--fontColorSecondary);
+        }
+
+
+        .tableHeader .logo_description {
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            color: var(--fontColorSecondary);
+        }
+
+        .tableHeader .address {
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+            color: var(--fontColorSecondary);
+        }
+
+        .receipt_info {
+            width: 190px;
+            border: 1px solid var(--color-primary);
+            border-collapse: collapse;
+            border-radius: 15px;
+            padding: 4px;
+        }
+
+        .receipt_info table {
+            width: 100%;
+            text-align: center;
+            border-collapse: collapse;
+        }
+
+        .receipt_info table tbody {
+            text-align: center;
+            margin: auto;
+        }
+
+        .receipt_info tbody tr {}
+
+        .receipt_info .receipt_type {
+            font-size: 12px;
+            text-align: center font-family: Arial, sans-serif;
+            color: var(--color-primary);
+
+        }
+
+        .receipt_info .receipt_series {
+            font-size: 16px;
+            color: var(--color-primary);
+
+        }
+
+        .receipt_info .receipt_ruc {
+            font-size: 12px;
+            text-align: center font-family: Arial, sans-serif;
+            color: var(--color-secondary);
+
+        }
+
+        .receipt_info .receipt_series {
+            font-size: 12px;
+            text-align: center font-family: Arial, sans-serif;
+            color: var(--fontColorPrimary);
+        }
+
+
+        /* table productos */
         .table_products {
             border-collapse: collapse;
             width: 100%;
-            font-size: 8px;
+            font-size: 10px;
         }
 
         .table_products thead {
-            border-top: 1.2px solid #F6187F;
-            border-bottom: 1.2px solid #F6187F;
+            border-top: 1.2px solid var(--color-primary);
+            border-bottom: 1.2px solid var(--color-primary);
         }
 
         .table_products thead th {
@@ -33,13 +131,17 @@
             text-align: left;
         }
 
-        .table_products thead th:nth-child(1) {
+        .table_products tbody tr td {
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
 
+        .table_products thead th:nth-child(1) {
             width: 45px;
         }
 
         .table_products thead th:nth-child(2) {
-            width: 65px;
+            width: 70px;
         }
 
         .table_products thead th:nth-child(3) {
@@ -61,13 +163,46 @@
             width: 55px;
         }
 
+        /* table info */
+
+        .table_info {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 10px;
+            border-top: 1.2px solid var(--color-primary);
+
+            padding-bottom: 5px;
+        }
+
+        .table_info tbody {}
+
+        .table_info .row_one {
+            width: 110px;
+            font-weight: bold;
+            padding-bottom: 5px;
+        }
+
+        .table_info .row_two {
+            width: 40px;
+            text-align: right;
+            font-weight: bold;
+            padding-bottom: 5px;
+        }
+
+        .table_info .row_three {
+            padding-left: 5px;
+            padding-bottom: 5px;
+            color: var(--fontColorSecondary);
+        }
+
+
         /*table totals */
 
         .table_totals {
-            border-top: 1.2px solid #F6187F;
-            border-bottom: 1.2px solid #F6187F;
+            border-top: 1.2px solid var(--color-primary);
+            border-bottom: 1.2px solid var(--color-primary);
             width: 100%;
-            font-size: 8px;
+            font-size: 10px;
             padding-top: 6px;
             padding-bottom: 10px;
         }
@@ -89,13 +224,13 @@
             font-weight: bold;
         }
 
-        .bold{
+        .bold {
             font-weight: bold;
         }
 
         .table_totals .totals {
             font-weight: bold;
-            font-size: 8px;
+            font-size: 12px;
         }
 
         .table_products tbody {}
@@ -103,7 +238,7 @@
         .box_border {
             margin-top: 10px;
             width: 97%;
-            border: 1px solid #F6187F;
+            border: 1px solid var(--color-primary);
             border-radius: 6px;
             padding: 10px;
         }
@@ -124,15 +259,16 @@
         .code_qr_content table {
             margin: auto;
         }
-        .code_qr_content .box_info{
-             font-size: 10px;
-             width: 250px;
-             padding: 8px;
+
+        .code_qr_content .box_info {
+            font-size: 10px;
+            width: 250px;
+            padding: 8px;
         }
 
         .code_qr_content .box_qr {
             padding: 8px;
-            border: 1px solid #F6187F;
+            border: 1px solid var(--color-primary);
             border-radius: 5px;
         }
 
@@ -146,7 +282,91 @@
 
 <body>
 
-    <img src="data:image/svg+xml;base64,{{ base64_encode($receipt) }}" class="receipt" />
+    <table class="tableHeader">
+        <tbody>
+            <tr>
+                <td class="receipt_logo">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <img src="{{ public_path('images/logo.png') }}" class="logo_img" />
+                                </td>
+                                <td>
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td class="logo_text">CAUTIVA</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="logo_description">MODA Y ESTILO</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="sub_logo">CASH TIME E.I.R.L</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="address">JR. BOLOGNESI 523 SAN MARTIN - SAN MARTIN - TARAPOTO
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td class="receipt_info">
+                    <table>
+                        <tbody>
+                            <tr class="receipt_type">
+                                <td>BOLETA DE VENTA</td>
+                            </tr>
+                            <tr class="receipt_type">
+                                <td>ELECTRÓNICA</td>
+                            </tr>
+                            <tr class="receipt_ruc">
+                                <td>RUC: 20608330284</td>
+                            </tr>
+                            <tr class="receipt_series">
+                                <td>EBO1-4276</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <table class="table_info">
+        <tbody>
+            <tr>
+                <td class="row_one"> </td>
+                <td class="row_two"> </td>
+                <td class="row_three">  </td>
+            </tr>
+            <tr>
+                <td class="row_one">Fecha de Emisión</td>
+                <td class="row_two">:</td>
+                <td class="row_three">2022-05-01</td>
+            </tr>
+            <tr>
+                <td class="row_one">Señor(es)</td>
+                <td class="row_two">:</td>
+                <td class="row_three">VENTA DEL DIA (CLIENTE VARIOS)</td>
+            </tr>
+            <tr>
+                <td class="row_one">Establecimiento del Eminsor</td>
+                <td class="row_two">:</td>
+                <td class="row_three">JR. BOLOGNESI 523 SAN MARTIN - SAN MARTIN - TARAPOTO</td>
+            </tr>
+            <tr>
+                <td class="row_one">Tipo de moneda </td>
+                <td class="row_two">:</td>
+                <td class="row_three">SOLES</td>
+            </tr>
+    </table>
+
 
     <table class="table_products">
         <thead>
@@ -208,7 +428,7 @@
                 <td class="value">S/ 0.00</td>
             </tr>
             <tr>
-                <td> </td>
+                <td><strong>SON: CIENTO TREINTA Y SEIS Y 00/100 SOLES</strong></td>
                 <td class="value bold">Otros Cargos:</td>
                 <td class="value">S/ 0.00</td>
             </tr>
@@ -235,7 +455,8 @@
         <div class="box_border_content">
             <p>Esta es una representación impresa de la factura electrónica, generada en el Sistema de
                 <strong>SUNAT</strong>
-                . puede verificarla utilizando su clave <strong>SOL.</strong></p>
+                . puede verificarla utilizando su clave <strong>SOL.</strong>
+            </p>
         </div>
     </div>
 
@@ -251,13 +472,15 @@
                 <tr>
                     <td>
                         <div class="box_qr">
-                            <img width="80" src="data:image/svg+xml;base64,{{ base64_encode($qrCode) }}" class="qrcode" />
+                            <img width="80" src="data:image/svg+xml;base64,{{ base64_encode($qrCode) }}"
+                                class="qrcode" />
                         </div>
                     </td>
                     <td>
                         <div class="box_info">
                             <p>Representación impresa del comprobante de venta electrónica, esta puede ser consultada en
-                                <strong>www.cautivamodayestiloamericano.shop</strong></p>
+                                <strong>www.cautivamodayestiloamericano.shop</strong>
+                            </p>
                         </div>
                     </td>
                 </tr>

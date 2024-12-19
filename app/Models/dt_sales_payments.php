@@ -9,9 +9,12 @@ class dt_sales_payments extends Model
 {
     use HasFactory;
     protected $table = "dt_sales_payments";
-    protected $primaryKey = 'dt_id'; 
+    protected $primaryKey = 'dt_id';
+    public $timestamps = true;
+    protected $guarded = [];
 
-    public function payments(){
+    public function payments()
+    {
         return $this->hasMany(payment::class, 'payment_id', 'payment_id');
     }
 }

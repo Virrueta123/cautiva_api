@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\product\show_product_resource;
+use App\Http\Resources\sale\sale_index_resource;
+use App\Http\Resources\sale\sale_show_resource;
 use App\Models\box;
 use App\Models\client;
 use App\Models\config;
 use App\Models\dt_sales;
+use App\Models\dt_sales_payments;
+use App\Models\payment;
+use App\Models\product;
 use App\Models\sale;
 use App\Services\greenter_service;
 use App\Utils\correlativo;
@@ -29,9 +35,49 @@ class sale_controller extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        try {
+            $query = sale::query();
+
+            // Agregar búsqueda si se envía un parámetro
+            if ($request->has('search')) {
+                $search = $request->get('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('setNombre', 'like', '%' . $search . '%')
+                        ->orWhere('setRuc', 'like', '%' . $search . '%')
+                        ->orWhere('setRazonSocial', 'like', '%' . $search . '%')
+                        ->orWhere('setApellido', 'like', '%' . $search . '%')
+                        ->orWhere('setDni', 'like', '%' . $search . '%');
+                });
+            }
+
+            $query->orderBy('sale_id', 'DESC');
+
+            // Paginación
+            $perPage = $request->get('per_page', 10); // Número de elementos por página (opcional)
+            $data = $query->paginate($perPage);
+
+            return response()->json([
+                "data" => [
+                    "last_page" => $data->lastPage(),
+                    "per_page" => $perPage,
+                    "current_page" => $data->currentPage(),
+                    "total" => $data->total(),
+                    "data" => sale_index_resource::collection($data->items()),
+
+                ],
+                'success' => true,
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'success' => false,
+                'message' => 'Hubo un error al obtener los productos',
+                'code' => 500,
+            ], 500);
+        }
     }
 
     /**
@@ -46,7 +92,18 @@ class sale_controller extends Controller
 
             $userId = Auth::id();
 
-            $box_id = box::where("status", "A")->first()->box_id;
+            $box = box::where("status", "A")->first();
+            //comprobar si hay caja abierta
+            if ($box == null) {
+                return response()->json([
+                    'error' =>  "No hay caja abierta",
+                    'success' => false,
+                    'message' => 'Caja',
+                    'code' => 400,
+                ], 400);
+            }
+
+            $box_id = $box->box_id;
 
             //si es cliente varios o no
             $isClientOther = $datax["isClientOther"];
@@ -58,12 +115,9 @@ class sale_controller extends Controller
             $total_sale = number_format($datax["total"], 2);
             $subtotal_sale = number_format($datax["subtotal"], 2);
 
-
             //descuentos
             $amount_discount = $datax["amount_discount"];
             $total_descuento = $datax["total_descuento"];
-
-
 
             if ($isClientOther) {
                 $client = client::find(1);
@@ -100,6 +154,19 @@ class sale_controller extends Controller
             //productos
             $create_dt_sale = [];
             foreach ($datax["products"] as $product) {
+
+                $product = dt_sales::where("product_id", encryptor::decrypt($product["identifier"]))->first();
+
+                if ($product) {
+                    return response()->json([
+                        'error' =>   "Producto ya se vendio",
+                        'success' => false,
+                        'message' => 'Error al crear la venta',
+                        'code' => 401,
+                        'data' => $sale,
+                    ], 401);
+                }
+
                 $producto_descontado = $product["product_sales"] - $amount_discount;
                 array_push(
                     $create_dt_sale,
@@ -130,11 +197,7 @@ class sale_controller extends Controller
                 $tipo_documento == "F" ? $client->bussiness_name : $client->name . " " . $client->lastname
             );
 
-            $items = $request->input('items');
             $total = $request->input('total');
-
-            if ($tipo_documento == "F") {
-            }
 
             switch ($tipo_documento) {
                 case "F":
@@ -148,12 +211,29 @@ class sale_controller extends Controller
                     $result = $this->greenterService->sendInvoice($invoice);
 
                     if ($result["success"]) {
+                        $sale->estado = "A";
+                        $sale->observations = $result["observations"];
+                        $sale->message_error = $result["message"];
+                        $sale->codigo_error = $result["code"];
+                        $sale->save();
+
+                        $create_dt_sale = array_map(function ($sales) use ($sale) {
+                            return array_merge($sales, [
+                                'sale_id' => $sale->sale_id,
+                                "created_at" => now(),
+                                "updated_at" => now(),
+                            ]);
+                        }, $create_dt_sale);
+
+                        $this->insertPayment($request->input('payment_model'), $sale, $box_id, $userId);
+                        dt_sales::insert($create_dt_sale);
+
                         return response()->json([
                             'error' =>   null,
                             'success' => true,
                             'message' => 'Venta cargado exitosamente',
                             'code' => 200,
-                            'data' => $sale,
+                            'data' => encryptor::encrypt($sale->sale_id),
                         ], 200);
                     } else {
                         return response()->json([
@@ -184,9 +264,14 @@ class sale_controller extends Controller
                         $sale->save();
 
                         $create_dt_sale = array_map(function ($sales) use ($sale) {
-                            return array_merge($sales, ['sale_id' => $sale->sale_id]);
+                            return array_merge($sales, [
+                                'sale_id' => $sale->sale_id,
+                                "created_at" => now(),
+                                "updated_at" => now(),
+                            ]);
                         }, $create_dt_sale);
 
+                        $this->insertPayment($request->input('payment_model'), $sale, $box_id, $userId);
                         dt_sales::insert($create_dt_sale);
 
                         return response()->json([
@@ -194,7 +279,7 @@ class sale_controller extends Controller
                             'success' => true,
                             'message' => 'Venta cargado exitosamente',
                             'code' => 200,
-                            'data' => $result,
+                            'data' =>  encryptor::encrypt($sale->sale_id),
                         ], 200);
                     } else {
                         return response()->json([
@@ -207,36 +292,38 @@ class sale_controller extends Controller
                     }
                     break;
                 case "N":
-                    $sale->estado = "A"; 
-                  
-                    if(!$sale->save()){ 
+                    $sale->estado = "A";
+
+                    if (!$sale->save()) {
                         return response()->json([
                             'error' =>   null,
                             'success' => false,
                             'message' => 'Error al crear la venta',
-                            'code' => 200, 
+                            'code' => 200,
                         ]);
                     }
 
                     $create_dt_sale = array_map(function ($sales) use ($sale) {
-                        return array_merge($sales, ['sale_id' => $sale->sale_id]);
+                        return array_merge($sales, [
+                            'sale_id' => $sale->sale_id,
+                            "created_at" => now(),
+                            "updated_at" => now(),
+                        ]);
                     }, $create_dt_sale);
 
+                    $this->insertPayment($request->input('payment_model'), $sale, $box_id, $userId);
                     dt_sales::insert($create_dt_sale);
- 
-                        return response()->json([
-                            'error' =>   null,
-                            'success' => true,
-                            'message' => 'Venta generada correctamente exitosamente',
-                            'code' => 200,
-                            'data' =>  encryptor::encrypt($sale->sale_id),
-                        ], 200);
-              
+
+                    return response()->json([
+                        'error' =>   null,
+                        'success' => true,
+                        'message' => 'Venta generada correctamente exitosamente',
+                        'code' => 200,
+                        'data' =>  encryptor::encrypt($sale->sale_id),
+                    ], 200);
+
                     break;
             }
- 
-         
-        
         } catch (\Throwable $th) {
             $code = 401;
             return response()->json([
@@ -248,12 +335,71 @@ class sale_controller extends Controller
         }
     }
 
+    public function insertPayment($payment_model, $sale, $box_id, $userId)
+    {
+        //poner los pagos correspondientes
+        $create_payments = [];
+        foreach ($payment_model as $payment) {
+
+            $payments = new payment();
+            $payments->account_id = encryptor::decrypt($payment["account"]["identifier"]);
+            $payments->amount = $payment['amount'];
+            $payments->type_payment = "VENTA";
+            $payments->created_by = $userId;
+            $payments->box_id = $box_id;
+            $payments->created_at = now();
+            $payments->updated_at = now();
+            $payments->save();
+
+            array_push(
+                $create_payments,
+                array(
+                    'sale_id' => $sale->sale_id,
+                    'payment_id' => $payments->payment_id,
+                    "created_at" => now(),
+                    "updated_at" => now(),
+                )
+            );
+        }
+
+        dt_sales_payments::insert($create_payments);
+    }
+
     /**
      * Display the specified resource.
      */
     public function show(string $identifier)
     {
-        $sales = Sale::find(encryptor::decrypt($identifier));
+      
+        try {
+             $sale = Sale::find(encryptor::decrypt($identifier));
+
+            if (!$sale) {
+                return response()->json([
+                    'error' =>  "Producto no encontrado",
+                    'success' => false,
+                    'message' => 'Producto no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
+            return response()->json([
+                'error' =>   null,
+                'success' => true,
+                'message' => 'Producto mostrado exitosamente',
+                'code' => 200,
+                'data' => sale_show_resource::make($sale),
+            ], 200);
+
+        } catch (\Throwable $e) {
+            $code = 401;
+            return response()->json([
+                'error' => "Error al mostrar el producto",
+                'success' => false,
+                'message' => 'Error al mostrar el producto',
+                'code' => $code,
+            ], $code);
+        }
     }
 
     /**

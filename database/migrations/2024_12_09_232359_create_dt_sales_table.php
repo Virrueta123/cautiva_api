@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('MtoValorVenta', 10, 2)->nullable();
             $table->decimal('MtoValorUnitario', 10, 2)->nullable();
             $table->decimal('MtoPrecioUnitario', 10, 2)->nullable();
-            $table->integer('CodProducto')->nullable();
+            $table->string('CodProducto',30)->nullable();
             $table->string('Unidad', 45)->nullable();
             $table->string('Descripcion', 255)->nullable();
             $table->integer('TipAfeIgv')->nullable();

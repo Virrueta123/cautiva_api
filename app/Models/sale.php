@@ -21,4 +21,15 @@ class sale extends Model
         return $this->hasMany(dt_sales_payments::class, 'sale_id', 'sale_id');
     }
     
+    public function client(){
+        return $this->belongsTo(client::class, 'client_id', 'client_id');
+    }
+
+    public function box(){
+        return $this->belongsTo(box::class, 'box_id', 'box_id');
+    }  
+
+    public function user(){
+        return $this->belongsTo(user::class, 'created_by', 'created_by');
+    }
 }

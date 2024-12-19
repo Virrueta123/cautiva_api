@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\product\product_resource;
 use App\Http\Resources\product\show_product_resource;
+use App\Models\dt_sales;
 use App\Models\product;
 use App\Rules\price_decimal;
 use App\Utils\encryptor;
@@ -189,6 +190,17 @@ class product_controller extends Controller
                     'error' =>  "El codigo no exite en la base de datos",
                     'success' => false,
                     'message' => 'Producto no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
+            $sale = dt_sales::where('product_id', $product->product_id)->first();
+        
+            if($sale){
+                return response()->json([
+                    'error' =>  "El producto ya se vendio",
+                    'success' => false,
+                    'message' => 'Producto',
                     'code' => 404,
                 ], 404);
             }

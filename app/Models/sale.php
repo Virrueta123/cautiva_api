@@ -30,6 +30,6 @@ class sale extends Model
     }  
 
     public function user(){
-        return $this->belongsTo(user::class, 'created_by', 'created_by');
+          return $this->belongsTo(user::class, 'created_by');
     }
 }

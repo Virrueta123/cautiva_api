@@ -155,17 +155,17 @@ class sale_controller extends Controller
             $create_dt_sale = [];
             foreach ($datax["products"] as $product) {
 
-                $product = dt_sales::where("product_id", encryptor::decrypt($product["identifier"]))->first();
+                // $product = dt_sales::where("product_id", encryptor::decrypt($product["identifier"]));
 
-                if ($product) {
-                    return response()->json([
-                        'error' =>   "Producto ya se vendio",
-                        'success' => false,
-                        'message' => 'Error al crear la venta',
-                        'code' => 401,
-                        'data' => $sale,
-                    ], 401);
-                }
+                // if ($product) {
+                //     return response()->json([
+                //         'error' =>   "Producto ya se vendio",
+                //         'success' => false,
+                //         'message' => 'Error al crear la venta',
+                //         'code' => 401,
+                //         'data' => $sale,
+                //     ], 401);
+                // }
 
                 $producto_descontado = $product["product_sales"] - $amount_discount;
                 array_push(
@@ -211,7 +211,7 @@ class sale_controller extends Controller
                     $result = $this->greenterService->sendInvoice($invoice);
 
                     if ($result["success"]) {
-                        $sale->estado = "A";
+                        $sale->estado = "E";
                         $sale->observations = $result["observations"];
                         $sale->message_error = $result["message"];
                         $sale->codigo_error = $result["code"];
@@ -257,7 +257,7 @@ class sale_controller extends Controller
 
                     if ($result["success"]) {
 
-                        $sale->estado = "A";
+                        $sale->estado = "E";
                         $sale->observations = $result["observations"];
                         $sale->message_error = $result["message"];
                         $sale->codigo_error = $result["code"];
@@ -292,7 +292,7 @@ class sale_controller extends Controller
                     }
                     break;
                 case "N":
-                    $sale->estado = "A";
+                    $sale->estado = "E";
 
                     if (!$sale->save()) {
                         return response()->json([
@@ -370,9 +370,9 @@ class sale_controller extends Controller
      */
     public function show(string $identifier)
     {
-      
+
         try {
-             $sale = Sale::find(encryptor::decrypt($identifier));
+            $sale = sale::find(encryptor::decrypt($identifier));
 
             if (!$sale) {
                 return response()->json([
@@ -390,7 +390,6 @@ class sale_controller extends Controller
                 'code' => 200,
                 'data' => sale_show_resource::make($sale),
             ], 200);
-
         } catch (\Throwable $e) {
             $code = 401;
             return response()->json([
@@ -426,24 +425,24 @@ class sale_controller extends Controller
 
             if (true) {
                 $qrCode = QrCode::format('svg')->size(200)->generate("www.cautivamodayestiloamericano.shop");
-                $ticket = Blade::compileString(view(
-                    'receipt.ticket',
-                    []
-                )->render());
+
                 $pdf = Pdf::loadView(
                     'receipt.receipt',
                     [
-                        "receipt" => $ticket,
                         "qrCode" => $qrCode
                     ]
                 );
-                return $pdf->stream('invoice.pdf');
+
+                // Codificar el contenido del PDF en base64
+                $pdfContent = base64_encode($pdf->output());
+
+                // Responder con datos JSON incluyendo el PDF
                 return response()->json([
-                    'error' =>   null,
+                    'error' => null,
                     'success' => true,
                     'message' => 'Venta cargado exitosamente',
                     'code' => 200,
-                    'data' => "",
+                    'data' => $pdfContent, // PDF codificado
                 ], 200);
             }
 

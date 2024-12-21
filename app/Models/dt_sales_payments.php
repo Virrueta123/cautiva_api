@@ -13,8 +13,8 @@ class dt_sales_payments extends Model
     public $timestamps = true;
     protected $guarded = [];
 
-    public function payments()
+    public function payment()
     {
-        return $this->hasMany(payment::class, 'payment_id', 'payment_id');
+        return $this->belongsTo(payment::class, 'payment_id', 'payment_id');
     }
 }

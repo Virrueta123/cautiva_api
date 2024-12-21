@@ -43,7 +43,7 @@ return new class extends Migration
             $table->timestamp('deleted_at')->nullable();
             $table->char('estado', 1)->nullable();
             $table->timestamp('fecha_baja')->nullable();
-            $table->integer('setDni')->nullable();
+            $table->string('setDni',"11")->nullable();
             $table->string('setNombre', 255)->nullable();
             $table->string('setApellido', 255)->nullable();
             $table->decimal('descuento', 10, 2)->nullable();
@@ -53,7 +53,6 @@ return new class extends Migration
             $table->string('message_error', 500)->nullable();
             $table->string('codigo_error', 200)->nullable();
             
-
             // Claves foráneas
             $table->foreign('client_id')->references('client_id')->on('clients')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');

@@ -25,6 +25,8 @@ class sale_index_resource extends JsonResource
             "setRazonSocial" => $this->setRazonSocial,
             'created_at' => $this->created_at,  
             'nproducts' => count($this->dt_sale),
+            'estado' => $this->estado,
+            'total' => $this->total,
         ];
     } 
 }

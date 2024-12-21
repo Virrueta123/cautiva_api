@@ -12,4 +12,9 @@ class dt_sales extends Model
     protected $primaryKey = 'dt_sale_id';
     public $timestamps = true;
     public $guarded = [];
+
+    public function product()
+    {
+        return $this->belongsTo(product::class, 'product_id', 'product_id');
+    }
 }

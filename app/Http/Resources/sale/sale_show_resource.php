@@ -5,6 +5,8 @@ namespace App\Http\Resources\sale;
 use App\Http\Resources\box\box_sale_resource;
 use App\Http\Resources\client\client_sale_resource;
 use App\Http\Resources\client\client_select_resource;
+use App\Http\Resources\dt_sale\dt_sale_resource;
+use App\Http\Resources\dt_sales_payments\dt_sales_payments_resource;
 use App\Http\Resources\user\user_resource;
 use App\Utils\encryptor;
 use Illuminate\Http\Request;
@@ -24,6 +26,8 @@ class sale_show_resource extends JsonResource
             'client' => client_sale_resource::make($this->client),
             'box' => box_sale_resource::make($this->box),
             'user' => user_resource::make($this->user),
+            'dt_sale' => dt_sale_resource::collection($this->dt_sale),
+            'dt_sales_payments' => dt_sales_payments_resource::collection($this->dt_sales_payments),
             'tipo_documento' => $this->tipo_documento,
             'serie' => $this->serie,
             'correlativo' => $this->correlativo,
@@ -42,10 +46,6 @@ class sale_show_resource extends JsonResource
             'setMtoOperExoneradas' => $this->setMtoOperExoneradas,
             'setMtoOperInafectas' => $this->setMtoOperInafectas,
             'setMtoOtrosCargos' => $this->setMtoOtrosCargos,
-            'setMtoImpVenta' => $this->setMtoImpVenta,
-            'setMtoImpVenta' => $this->setMtoImpVenta,
-            'setMtoImpVenta' => $this->setMtoImpVenta,
-            'setMtoImpVenta' => $this->setMtoImpVenta,
             'estado' => $this->estado,
             'fecha_baja' => $this->fecha_baja,
             'descuento' => $this->descuento,

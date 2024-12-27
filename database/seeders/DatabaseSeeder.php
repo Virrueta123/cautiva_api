@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Olga',
             'username' => 'olga',
             'password' => Hash::make('olga123456'),
-            'type_user' => 'admin', 
+            'type_user' => 'admin',
             'remember_token' => Str::random(10),
         ]);
 
@@ -165,14 +165,16 @@ class DatabaseSeeder extends Seeder
         // Combinar arrays
         $list_config = array_merge($list_config, $timestamp);
         config::insert($list_config);
-        //end
+       
+        // create new sending type 
 
         category::insert($list_categories);
         modell::insert($list_models);
         account::insert($list_accounts);
 
-        product_factory::new()->count(50)->create();
-
-        \Database\Factories\client_factory::new()->count(50)->create();
+        if (!app()->environment('production')) {
+            // product_factory::new()->count(50)->create();
+            // \Database\Factories\client_factory::new()->count(50)->create();
+        }
     }
 }

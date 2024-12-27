@@ -18,6 +18,7 @@ class dt_sale_resource extends JsonResource
         return [
             'MtoPrecioUnitario' => $this->MtoPrecioUnitario,
             'discount' => $this->discount,
+            "Descripcion" => $this->Descripcion,
             "product" => show_product_resource::make($this->product),
         ];
     }

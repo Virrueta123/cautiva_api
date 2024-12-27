@@ -19,4 +19,9 @@ class box extends Model
         'opening_date'
 
     ];
+
+    public function sendings()
+    {
+         
+    }
 }

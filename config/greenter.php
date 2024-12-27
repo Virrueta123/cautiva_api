@@ -1,6 +1,6 @@
 <?php
 return [
-    'cert' => 'certificates/certificate.pem',
+    'cert' =>  env('APP_ENV') == "production" ? "certificates/production/certificado.pem" :  "certificates/certificate.pem",
     'username_sol' =>  env('USERNAME_SOL'),
     'password_sol' =>  env('PASSWORD_SOL'),
     'ruc_sol' => env('RUC_SOL'),

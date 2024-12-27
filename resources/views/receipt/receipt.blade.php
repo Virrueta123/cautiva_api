@@ -117,7 +117,7 @@
         .table_products {
             border-collapse: collapse;
             width: 100%;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .table_products thead {
@@ -131,37 +131,54 @@
             text-align: left;
         }
 
+        .table_products tbody td,
+        .table_products thead th {
+            border: 0.4px solid var(--color-primary);
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+
         .table_products tbody tr td {
             padding-top: 5px;
             padding-bottom: 5px;
         }
 
         .table_products thead th:nth-child(1) {
-            width: 45px;
+            width: 60px;
         }
 
         .table_products thead th:nth-child(2) {
-            width: 70px;
+            width: 45px;
         }
 
         .table_products thead th:nth-child(3) {
-            width: 375px;
+            width: 70px;
         }
 
         .table_products thead th:nth-child(4) {
-            text-align: right;
-            width: 58px;
+            width: 315px;
         }
 
         .table_products thead th:nth-child(5) {
             text-align: right;
-            width: 65px;
+            width: 58px;
         }
 
         .table_products thead th:nth-child(6) {
             text-align: right;
+            width: 65px;
+        }
+
+        .table_products thead th:nth-child(7) {
+            text-align: right;
             width: 55px;
         }
+
+        .table_products thead th:nth-child(8) {
+            text-align: right;
+            width: 55px;
+        }
+
 
         /* table info */
 
@@ -319,7 +336,19 @@
                     <table>
                         <tbody>
                             <tr class="receipt_type">
-                                <td>BOLETA DE VENTA</td>
+                                @switch($sale->tipo_documento)
+                                    @case('F')
+                                        <td>BOLETA DE VENTA</td>
+                                    @break
+
+                                    @case('B')
+                                        <td>BOLETA DE TICKET</td>
+                                    @break
+
+                                    @case('N')
+                                        <td>NOTA DE VENTA</td>
+                                    @break
+                                @endswitch
                             </tr>
                             <tr class="receipt_type">
                                 <td>ELECTRÓNICA</td>
@@ -328,7 +357,7 @@
                                 <td>RUC: 20608330284</td>
                             </tr>
                             <tr class="receipt_series">
-                                <td>EBO1-4276</td>
+                                <td>{{ $sale->serie }}-{{ $sale->correlativo }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -343,18 +372,31 @@
             <tr>
                 <td class="row_one"> </td>
                 <td class="row_two"> </td>
-                <td class="row_three">  </td>
+                <td class="row_three"> </td>
             </tr>
             <tr>
                 <td class="row_one">Fecha de Emisión</td>
                 <td class="row_two">:</td>
-                <td class="row_three">2022-05-01</td>
+                <td class="row_three">{{ \Carbon\Carbon::parse($sale->created_at)->format('Y-m-d') }}</td>
             </tr>
             <tr>
                 <td class="row_one">Señor(es)</td>
                 <td class="row_two">:</td>
-                <td class="row_three">VENTA DEL DIA (CLIENTE VARIOS)</td>
-            </tr>
+                @if ($sale->tipo_documento == 'F')
+                    <td class="row_three">{{ $sale->setRazonSocial }} </td>
+                @else
+                    <td class="row_three">{{ $sale->setNombre }} {{ $sale->setApellido }}</td>
+                @endif
+            </tr> 
+
+            @if ($sale->tipo_documento == 'F')
+                <tr>
+                    <td class="row_one">Documento</td>
+                    <td class="row_two">:</td>
+                    <td class="row_three">{{ $sale->setRuc }} </td>
+                </tr>
+            @endif
+
             <tr>
                 <td class="row_one">Establecimiento del Eminsor</td>
                 <td class="row_two">:</td>
@@ -371,6 +413,7 @@
     <table class="table_products">
         <thead>
             <tr>
+                <th>Cod</th>
                 <th>Cantidad</th>
                 <th>Unidad Medida</th>
                 <th>Descripción</th>
@@ -382,14 +425,18 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>1</td>
-                <td>Unidad</td>
-                <td>Bermuda talla 36</td>
-                <td align="right">35.00</td>
-                <td align="right">0.00</td>
-                <td align="right">35.00</td>
-            </tr>
+            @foreach($sale->dt_sale as $product)
+                <tr>
+                    <td>{{ $product->CodProducto }}</td>
+                    <td>1</td>
+                    <td>Unidad</td>
+                    <td>{{ $product->Descripcion }}</td>
+                    <td align="right">{{ $product->MtoPrecioUnitario }}</td>
+                    <td align="right">0.00</td>
+                    <td align="right">{{ $product->MtoPrecioUnitario }}</td>
+                </tr>
+            @endforeach
+         
         </tbody>
     </table>
 
@@ -405,17 +452,17 @@
             <tr>
                 <td></td>
                 <td class="value bold">Op. Gravada:</td>
-                <td class="value">S/ 0.00</td>
+                <td class="value">S/ {{ $sale->setMtoOperGravadas }}</td>
             </tr>
             <tr>
                 <td>(*) Sin impuestos.</td>
                 <td class="value bold">Op. Exonerada:</td>
-                <td class="value">S/ 136.00</td>
+                <td class="value">S/ {{$sale->setMtoOperExoneradas}}</td>
             </tr>
             <tr>
                 <td>(**) Incluye impuestos, de ser Op. gravada</td>
                 <td class="value bold">Op. Inafecta:</td>
-                <td class="value">S/ 0.00</td>
+                <td class="value">S/ {{ $sale->setMtoOperInafectas }}</td>
             </tr>
             <tr>
                 <td> </td>
@@ -425,12 +472,12 @@
             <tr>
                 <td> </td>
                 <td class="value bold">IGV:</td>
-                <td class="value">S/ 0.00</td>
+                <td class="value">S/ {{ $sale->setMtoIGV }}</td>
             </tr>
             <tr>
-                <td><strong>SON: CIENTO TREINTA Y SEIS Y 00/100 SOLES</strong></td>
+                <td><strong>{{ $spelled }}</strong></td>
                 <td class="value bold">Otros Cargos:</td>
-                <td class="value">S/ 0.00</td>
+                <td class="value">S/ {{ $sale->setMtoOtrosCargos }}</td>
             </tr>
             <tr>
                 <td> </td>
@@ -445,7 +492,7 @@
             <tr>
                 <td> </td>
                 <td class="value bold totals">Importe Total:</td>
-                <td class="value totals">S/ 136.00</td>
+                <td class="value totals">S/ {{ $sale->total }}</td>
             </tr>
 
         </tbody>

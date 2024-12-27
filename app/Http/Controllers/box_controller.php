@@ -16,7 +16,32 @@ class box_controller extends Controller
      */
     public function index()
     {
-        //
+        try { 
+
+            $box = box::all();
+
+            if (!$box) {
+                return response()->json([
+                    'error' =>  "Error al mostrar caja",
+                    'success' => false,
+                    'message' => 'Error al mostrar',
+                    'code' => 400,
+                ], 400);
+            }
+
+            return response()->json([
+                "message" => "Cajas mostratadas exitosamente",
+                'success' => true,
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'success' => false,
+                'message' => 'Hubo un error al obtener los productos',
+                'code' => 500,
+            ], 500);
+        }
     }
 
     /**
@@ -29,7 +54,7 @@ class box_controller extends Controller
 
             $validator = Validator::make($request->all(), [
                 'reference' => 'required',
-                'initial_balance' => 'required', 
+                'initial_balance' => 'required',
             ]);
 
             if ($validator->fails()) {
@@ -45,11 +70,11 @@ class box_controller extends Controller
             $validaterData["created_by"] = $userId; //get authenticated user id from token
             $validaterData["status"] = "A";
             $validaterData["opening_date"] = Carbon::now()->format('Y-m-d H:i:s');
-         
 
-            $box = box::create($request->all());
-            
-            if(!$box){
+
+            $box = box::create($validaterData);
+
+            if (!$box) {
                 return response()->json([
                     'error' =>  "Error al crear la caja",
                     'success' => false,
@@ -57,13 +82,12 @@ class box_controller extends Controller
                     'code' => 400,
                 ], 400);
             }
-  
+
             return response()->json([
-                "message" => "Caja creado exitosamente" ,
+                "message" => "Caja creado exitosamente",
                 'success' => true,
                 'code' => 200,
             ], 200);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -79,7 +103,30 @@ class box_controller extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $box = box::find(encryptor::decrypt($id));
+            if (!$box) {
+                return response()->json([
+                    'error' =>  "Error al obtener la caja",
+                    'success' => false,
+                    'message' => 'Error en la caja',
+                    'code' => 400,
+                ], 400);
+            }
+
+            return response()->json([
+                "message" => "Caja creado exitosamente",
+                'success' => true,
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'success' => false,
+                'message' => 'Hubo un error al obtener los productos',
+                'code' => 500,
+            ], 500);
+        }
     }
 
     /**
@@ -93,17 +140,15 @@ class box_controller extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy(string $id) {}
 
-    public function close(Request $request){
+    public function close(Request $request)
+    {
         try {
-             if($request->input("identifier")){
+            if ($request->input("identifier")) {
                 $box = box::find(encryptor::decrypt($request->input("identifier")));
-            
-                if(!$box){
+
+                if (!$box) {
                     return response()->json([
                         'error' =>  "Error al crear la caja",
                         'success' => false,
@@ -111,14 +156,11 @@ class box_controller extends Controller
                         'code' => 400,
                     ], 400);
                 }
-                
+
                 $box->status = "C";
                 $box->closing_date = Carbon::now();
                 $box->save();
-                
-             }
-           
-            
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),

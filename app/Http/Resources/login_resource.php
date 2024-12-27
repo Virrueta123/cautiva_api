@@ -17,15 +17,16 @@ class login_resource extends JsonResource
     {
         return [
             'identifier' => encryptor::encrypt($this->id),
-            'name' => $this->name, 
+            'name' => $this->name,
+            'type_user' => $this->type_user,
         ];
     }
 
     public function with($request)
     {
         return [
-            'identifier' =>  $this->id ,
-            'name' => $this->name, 
+            'identifier' =>  $this->id,
+            'name' => $this->name,
         ];
     }
 }

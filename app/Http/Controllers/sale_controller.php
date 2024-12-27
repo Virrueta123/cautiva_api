@@ -20,8 +20,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Blade;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Utils\encryptor;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Luecano\NumeroALetras\NumeroALetras;
 
 class sale_controller extends Controller
 {
@@ -75,6 +77,26 @@ class sale_controller extends Controller
                 'error' => $e->getMessage(),
                 'success' => false,
                 'message' => 'Hubo un error al obtener los productos',
+                'code' => 500,
+            ], 500);
+        }
+    }
+
+    public function convert_certificate()
+    {
+        try {
+            $this->greenterService->convertCertificate();
+            return response()->json([
+                'error' => null,
+                'success' => true,
+                'message' => 'Certificado convertido exitosamente',
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'success' => false,
+                'message' => 'Hubo un error al convertir el certificado',
                 'code' => 500,
             ], 500);
         }
@@ -412,26 +434,79 @@ class sale_controller extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $identifier, Request $request)
     {
-        //
+        try {
+            $sale = sale::find(encryptor::decrypt($identifier));
+
+            if (!$sale) {
+                return response()->json([
+                    'error' =>  "Venta no encontrado",
+                    'success' => false,
+                    'message' => 'Venta no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
+            $unsubscribeTicket = $this->greenterService->unsubscribeTicket(
+                $sale->correlativo,
+                $request->input('motivo'),
+                $sale->serie
+            ); 
+
+            if ($unsubscribeTicket["success"]) {
+                $sale->estado = "D";
+                $sale->save();
+
+                return response()->json([
+                    'error' =>   null,
+                    'success' => true,
+                    'message' => 'Venta anulada exitosamente',
+                    'code' => 200,
+                ], 200);
+            } else {
+                return response()->json([
+                    'error' =>  "Error al anular la venta",
+                    'success' => false,
+                    'message' => 'Error al anular la venta',
+                    'code' => 400,
+                ], 400);
+            }
+        } catch (\Throwable $th) {
+            $code = 401;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'success' => false,
+                'message' => 'Error al mostrar el venta',
+                'code' => $code,
+            ], $code);
+        }
     }
 
     //adicionales
     public function share($identifier)
     {
         try {
-            // $sale = sale::find($id);
+            $sale = sale::find(encryptor::decrypt($identifier));
 
-            if (true) {
+            $formatter = new NumeroALetras();
+            $spelled = 'SON: ' . $formatter->toWords($sale->total) . ' Y 00/100 SOLES';
+
+            if ($sale) {
+                $sale =  sale_show_resource::make($sale);
                 $qrCode = QrCode::format('svg')->size(200)->generate("www.cautivamodayestiloamericano.shop");
 
                 $pdf = Pdf::loadView(
                     'receipt.receipt',
                     [
-                        "qrCode" => $qrCode
+                        "qrCode" => $qrCode,
+                        "sale" => $sale,
+                        "spelled" => $spelled
                     ]
                 );
+
+                // Generar el PDF
+                return  $pdf->stream();
 
                 // Codificar el contenido del PDF en base64
                 $pdfContent = base64_encode($pdf->output());
@@ -457,7 +532,7 @@ class sale_controller extends Controller
             return response()->json([
                 'error' => $th->getMessage(),
                 'success' => false,
-                'message' => 'Error al crear el producto',
+                'message' => 'Error al mostrar el venta',
                 'code' => $code,
             ], $code);
         }
@@ -480,7 +555,6 @@ class sale_controller extends Controller
     public function getSerie($type_of_receipt)
     {
         $config = config::find(1);
-
 
         switch ($type_of_receipt) {
             case 'F':

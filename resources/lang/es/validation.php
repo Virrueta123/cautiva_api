@@ -205,7 +205,9 @@ return [
         'ruc' => 'ruc',
         'phone' => 'telefono',
         'bussiness_name' => 'nombre de la empresa',
-
+        //atributes for boxes
+        'reference' => 'referencia',
+        'initial_balance' => 'saldo inicial',
     ],
 
 ];

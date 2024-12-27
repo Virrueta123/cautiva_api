@@ -10,7 +10,11 @@ use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\SaleDetail;
 use Greenter\Model\Sale\Legend;
+use Greenter\Model\Voided\Voided;
+use Greenter\Model\Voided\VoidedDetail;
 use Greenter\See;
+use Greenter\XMLSecLibs\Certificate\X509Certificate;
+use Greenter\XMLSecLibs\Certificate\X509ContentType;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Luecano\NumeroALetras\NumeroALetras;
@@ -22,6 +26,23 @@ class greenter_service
     public function __construct(See $see)
     {
         $this->see = $see;
+    }
+
+    public function convertCertificate()
+    {
+
+        $pfx = file_get_contents('certificates/production/certificado.p12');
+        $password = 'CautivaModaEstilo123';
+
+        $certificate = new X509Certificate($pfx, $password);
+        $pemContent = $certificate->export(X509ContentType::PEM);
+
+        // Guardar como archivo PEM
+        file_put_contents('certificates/production/certificado.pem', $pemContent);
+
+        // Configurar en el objeto See (de Greenter)
+        $see = new See();
+        $see->setCertificate($pemContent);
     }
 
     public function createCompany()
@@ -47,6 +68,72 @@ class greenter_service
             ->setTipoDoc($by == "F" ? '6' : "1")
             ->setNumDoc($documento)
             ->setRznSocial($razonSocial);
+    }
+
+    public function unsubscribeTicket($correlativo, $motivo, $serie)
+    {
+        try {
+            Log::error($correlativo);
+            Log::error($motivo);
+            Log::error($serie);
+            // Crear el documento de baja
+            $baja = (new Voided())
+                ->setCorrelativo($correlativo)
+                ->setFecComunicacion(new \DateTime())
+                ->setFecGeneracion(new \DateTime())
+                ->setCompany($this->createCompany());
+
+            // Agregar el detalle de la boleta a dar de baja
+            $detalle = (new VoidedDetail())
+                ->setTipoDoc('03') // 03 es el código para Boleta
+                ->setSerie($serie)
+                ->setCorrelativo($correlativo)
+                ->setDesMotivoBaja($motivo);
+
+            $baja->setDetails([$detalle]);
+
+            // Enviar el documento de baja
+            $result = $this->see->send($baja);
+
+            // Procesar la respuesta
+            if ($result->isSuccess()) {
+                return [
+                    'success' => true,
+                    'message' => 'Baja enviada con éxito',
+                    'code' => 200,
+                    'observations' => "Ticket: " . $result->getTicket()
+                ];
+
+                $result = $this->see->getStatus($result->getTicket());
+                if ($result->isSuccess()) {
+                    return [
+                        'success' => true,
+                        'message' => 'Baja enviada con éxito',
+                        'code' => 200,
+                        'observations' => "Estado: " . $result->getCdrResponse()->getDescription()
+                    ];
+                } else {
+
+                    echo "Error al consultar ticket: " . $result->getError()->getCode() . "\n";
+                }
+            } else {
+                Log::error("Error: " . $result->getError()->getCode());
+                return [
+                    'success' => false,
+                    'message' => "Error: " . $result->getError()->getCode(),
+                    'code' => $result->getError()->getCode()
+                ];
+
+                // echo $result->getError()->getMessage() . "\n";
+            }
+        } catch (\Exception $e) {
+            Log::error($e);
+            return [
+                'success' => false,
+                'message' => 'Hubo un error al enviar el ticket',
+                'code' => 500,
+            ];
+        }
     }
 
     //crear un factura

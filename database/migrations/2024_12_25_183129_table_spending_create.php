@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('spendings', function (Blueprint $table) {
-            $table->bigInteger('spending_id')->primary();
+            $table->unsignedBigInteger('spending_id')->primary();
             $table->foreignId('spending_type_id')->nullable()->constrained('spending_type', 'spending_type_id')->onDelete('set null');
             $table->string('description', 255)->nullable();
             $table->decimal('amount', 10, 2)->nullable();

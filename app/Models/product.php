@@ -26,19 +26,23 @@ class product extends Model
         "created_by"
     ];
 
-    public function category(){
+    public function category()
+    {
         return $this->belongsTo(category::class, 'category_id');
     }
 
-    public function model(){
+    public function model()
+    {
         return $this->belongsTo(modell::class, 'model_id');
     }
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(user::class, 'created_by');
     }
 
-    public function size(){
+    public function size()
+    {
         return $this->belongsTo(size::class, 'size_id');
     }
 
@@ -52,22 +56,18 @@ class product extends Model
                 $productName = strtoupper(substr($product->product_name ?? 'XX', 0, 2));
                 $typeInitials = strtoupper(substr($product->category->category_name ?? 'XX', 0, 2));
                 $sizeInitials = strtoupper(substr($product->model->model_name ?? 'XX', 0, 2));
-                
+
                 // Generar un número aleatorio
                 $randomNumber = random_int(1000, 9999);
-        
+
                 // Concatenar el código
                 $barcode = $productName . $typeInitials . $sizeInitials . $randomNumber;
-        
-                // Si el código ya existe, cambiar una de las iniciales (en este caso 'typeInitials')
-                if (self::where('barcode', $barcode)->exists()) {
-                    // Cambiar la inicial de la categoría (por ejemplo, cambiar una letra aleatoria)
-                    $typeInitials = strtoupper(chr(random_int(65, 90))) . strtoupper(chr(random_int(65, 90)));
-                } else {
-                    // Si el código no existe, asignarlo al producto
-                    $product->barcode = $barcode;
-                }
-            } while (self::where('barcode', $product->barcode)->exists());
+
+                // Verificar si el código ya existe
+            } while (self::where('barcode', $barcode)->exists());
+
+            // Asignar el código único al producto
+            $product->barcode = $barcode;
         });
     }
 }

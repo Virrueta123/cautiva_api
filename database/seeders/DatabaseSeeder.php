@@ -173,8 +173,8 @@ class DatabaseSeeder extends Seeder
         account::insert($list_accounts);
 
         if (!app()->environment('production')) {
-            // product_factory::new()->count(50)->create();
-            // \Database\Factories\client_factory::new()->count(50)->create();
+            product_factory::new()->count(50)->create();
+            \Database\Factories\client_factory::new()->count(50)->create();
         }
     }
 }

@@ -10,6 +10,7 @@ use App\Rules\price_decimal;
 use App\Utils\encryptor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class product_controller extends Controller
@@ -213,6 +214,7 @@ class product_controller extends Controller
                 'data' => product_resource::make($product),
             ], 200);
         } catch (\Throwable $e) {
+            Log::error($e->getMessage());
             $code = 401;
             return response()->json([
                 'error' => "Error al mostrar el producto",

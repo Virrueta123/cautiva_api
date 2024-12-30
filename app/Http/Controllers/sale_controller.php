@@ -205,7 +205,7 @@ class sale_controller extends Controller
                         "CodProducto" => $product["barcode"],
                         "Unidad" => "unidad",
                         "Descripcion" => $product["product_name"] . " " . $product["category"]["category_name"] . " " . $product["size"]["size_name"],
-                        "TipAfeIgv" => 20,
+                        "TipAfeIgv" => $producto_descontado,
                         "BaseIgv" => 0,
                         "discount" => $amount_discount,
                     )
@@ -452,7 +452,7 @@ class sale_controller extends Controller
                 $sale->correlativo,
                 $request->input('motivo'),
                 $sale->serie
-            );
+            ); 
 
             if ($unsubscribeTicket["success"]) {
                 $sale->estado = "D";

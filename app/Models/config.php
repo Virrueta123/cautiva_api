@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model; 
 
 class config extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
     protected $table = "configs";
     protected $primaryKey = 'config_id';
     public $timestamps = true;

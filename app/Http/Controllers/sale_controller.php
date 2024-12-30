@@ -205,7 +205,7 @@ class sale_controller extends Controller
                         "CodProducto" => $product["barcode"],
                         "Unidad" => "unidad",
                         "Descripcion" => $product["product_name"] . " " . $product["category"]["category_name"] . " " . $product["size"]["size_name"],
-                        "TipAfeIgv" => $producto_descontado,
+                        "TipAfeIgv" =>'20',
                         "BaseIgv" => 0,
                         "discount" => $amount_discount,
                     )

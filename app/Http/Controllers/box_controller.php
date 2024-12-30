@@ -105,6 +105,7 @@ class box_controller extends Controller
     {
         try {
             $box = box::find(encryptor::decrypt($id));
+
             if (!$box) {
                 return response()->json([
                     'error' =>  "Error al obtener la caja",

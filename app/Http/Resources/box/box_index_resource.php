@@ -18,6 +18,8 @@ class box_index_resource extends JsonResource
         return [
             'identifier' => encryptor::encrypt($this->box_id),
             'reference' => $this->reference,
+            'sedings_amount' =>  $this->sendings_amount->payment->sum('amount'),
+            'sale_amount' =>  0,
         ];
     }
 }

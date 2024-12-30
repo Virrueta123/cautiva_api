@@ -6,16 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class category extends Model
+class dt_sales_spendings extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = "categories";
-    protected $primaryKey = 'category_id';
+    protected $table = "dt_sales_spendings";
+    protected $primaryKey = 'dt_id';
     public $timestamps = true;
+    protected $guarded = [];
 
-    //relationship
-    public function products()
+    public function payment()
     {
-        return $this->hasMany(product::class, "products_id");
+        return $this->belongsTo(payment::class);
     }
 }

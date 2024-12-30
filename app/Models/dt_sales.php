@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class dt_sales extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $table = "dt_sales";
     protected $primaryKey = 'dt_sale_id';
     public $timestamps = true;

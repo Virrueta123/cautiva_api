@@ -205,7 +205,7 @@ class sale_controller extends Controller
                         "CodProducto" => $product["barcode"],
                         "Unidad" => "unidad",
                         "Descripcion" => $product["product_name"] . " " . $product["category"]["category_name"] . " " . $product["size"]["size_name"],
-                        "TipAfeIgv" =>'20',
+                        "TipAfeIgv" => '20',
                         "BaseIgv" => 0,
                         "discount" => $amount_discount,
                     )
@@ -437,6 +437,7 @@ class sale_controller extends Controller
     public function destroy(string $identifier, Request $request)
     {
         try {
+
             $sale = sale::find(encryptor::decrypt($identifier));
 
             if (!$sale) {
@@ -448,11 +449,45 @@ class sale_controller extends Controller
                 ], 404);
             }
 
+            if ($sale->estado == "D") {
+                return response()->json([
+                    'error' =>  "Venta ya anulada",
+                    'success' => false,
+                    'message' => 'Venta ya anulada',
+                    'code' => 404,
+                ]);
+            }
+
+            if ($sale->tipo_documento == "N") {
+                $sale->fecha_baja = Carbon::now()->format('Y-m-d H:i:s');
+                $sale->motivo_cancelacion = $request->input('motivo');
+                $sale->estado = "D";
+                $sale->save();
+
+                //eleimnar productos en el dt_sale
+                dt_sales::where('sale_id', $sale->sale_id)->delete();
+
+                //eleiminar los payments
+                dt_sales_payments::where('sale_id', $sale->sale_id)->each(function ($dtSalePayment) {
+                    $dtSalePayment->payment->delete(); // Eliminar cada pago relacionado
+                });
+
+                //eleiminar pagos en el dt_sales_payments
+                dt_sales_payments::where('sale_id', $sale->sale_id)->delete();
+
+                return response()->json([
+                    'error' =>  "Venta ya anulada",
+                    'success' => false,
+                    'message' => 'Venta ya anulada',
+                    'code' => 404,
+                ], 404);
+            }
+
             $unsubscribeTicket = $this->greenterService->unsubscribeTicket(
                 $sale->correlativo,
                 $request->input('motivo'),
                 $sale->serie
-            ); 
+            );
 
             if ($unsubscribeTicket["success"]) {
                 $sale->estado = "D";

@@ -16,12 +16,12 @@ class sale extends Model
 
     public function dt_sale()
     {
-        return $this->hasMany(dt_sales::class, 'sale_id', 'sale_id');
+        return $this->hasMany(dt_sales::class, 'sale_id', 'sale_id')->withTrashed();
     }
 
     public function dt_sales_payments()
     {
-        return $this->hasMany(dt_sales_payments::class, 'sale_id', 'sale_id');
+        return $this->hasMany(dt_sales_payments::class, 'sale_id', 'sale_id')->withTrashed();
     }
 
     public function client()

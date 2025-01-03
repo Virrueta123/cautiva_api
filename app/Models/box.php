@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class box extends Model
 {
-       use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
     protected $table = "boxes";
     protected $primaryKey = 'box_id';
     public $timestamps = true;
@@ -23,6 +23,11 @@ class box extends Model
 
     public function sendings_amount()
     {
-          $sedings_amount = dt_sales_spendings::where('box_id', $this->box_id);
+        return $this->hasMany(payment::class, 'box_id', 'box_id')->where("type_payment","GASTO");
+    }
+
+    public function sales_amount()
+    {
+        return $this->hasMany(payment::class, 'box_id', 'box_id')->where("type_payment","VENTA");
     }
 }

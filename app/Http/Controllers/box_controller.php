@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\box\box_index_resource;
 use App\Models\box;
 use App\Utils\encryptor;
 use Carbon\Carbon;
@@ -33,6 +34,7 @@ class box_controller extends Controller
                 "message" => "Cajas mostratadas exitosamente",
                 'success' => true,
                 'code' => 200,
+                'data' => box_index_resource::collection($box),
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

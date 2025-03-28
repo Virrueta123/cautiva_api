@@ -392,7 +392,6 @@ class sale_controller extends Controller
      */
     public function show(string $identifier)
     {
-
         try {
             $sale = sale::find(encryptor::decrypt($identifier));
 
@@ -412,6 +411,7 @@ class sale_controller extends Controller
                 'code' => 200,
                 'data' => sale_show_resource::make($sale),
             ], 200);
+
         } catch (\Throwable $e) {
             $code = 401;
             return response()->json([
@@ -476,11 +476,11 @@ class sale_controller extends Controller
                 dt_sales_payments::where('sale_id', $sale->sale_id)->delete();
 
                 return response()->json([
-                    'error' =>  "Venta ya anulada",
-                    'success' => false,
-                    'message' => 'Venta ya anulada',
-                    'code' => 404,
-                ], 404);
+                    'error' =>  "Venta anulada exitosamente",
+                    'success' => true,
+                    'message' => 'Operacion  exitosamente',
+                    'code' => 200,
+                ], 200);
             }
 
             $unsubscribeTicket = $this->greenterService->unsubscribeTicket(

@@ -19,3 +19,4 @@ class dt_sales_payments extends Model
         return $this->belongsTo(payment::class, 'payment_id', 'payment_id')->withTrashed();
     }
 }
+ 

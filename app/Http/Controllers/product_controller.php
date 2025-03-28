@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class product_controller extends Controller
 {
@@ -33,7 +34,7 @@ class product_controller extends Controller
             // Paginación
             $perPage = $request->get('per_page', 10); // Número de elementos por página (opcional)
             $data = $query->paginate($perPage);
- 
+
             return response()->json([
                 "data" => [
                     "last_page" => $data->lastPage(),
@@ -46,7 +47,6 @@ class product_controller extends Controller
                 'success' => true,
                 'code' => 200,
             ], 200);
- 
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -65,7 +65,7 @@ class product_controller extends Controller
 
         try {
             $userId = Auth::id();
- 
+
             $validator = Validator::make($request->all(), [
                 'category_id' => 'required',
                 'model_id' => 'required',
@@ -86,14 +86,14 @@ class product_controller extends Controller
 
             $validaterData = $validator->validated();
 
+
             $validaterData["category_id"] = encryptor::decrypt($request->input("category_id"));
             $validaterData["product_stock"] = 1;
             $validaterData["model_id"] = encryptor::decrypt($request->input("model_id"));
             $validaterData["size_id"] = encryptor::decrypt($request->input("size_id"));
-            $validaterData["created_by"] = $userId; //get authenticated user id from token
-
+            $validaterData["created_by"] =  $userId;
             $validaterData["product_profit"] = $validaterData["product_sales"] - $validaterData["product_purchase"];
-
+            $validaterData["is_hot_sale"] = $request->input("is_hot_sale");
 
             $product = product::create($validaterData);
 
@@ -121,6 +121,74 @@ class product_controller extends Controller
                 'message' => 'Error al crear el producto',
                 'code' => $code,
             ], $code);
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $identifier)
+    {
+        try {
+            $userId = Auth::id();
+
+            $identifier = Encryptor::decrypt($identifier);
+
+            $validator = Validator::make($request->all(), [
+                'category_id' => 'required',
+                'model_id' => 'required',
+                'size_id' => 'required',
+                'product_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'product_name')->ignore($identifier, 'product_id'),
+                ],
+                'product_purchase' => ["numeric", "min:1", "required", new price_decimal],
+                'product_sales' => ["numeric", "min:1", "required", new price_decimal],
+                'is_hot_sale' => 'required|in:Y,N'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => implode(' | ', $validator->errors()->all()),
+                    'success' => false,
+                    'message' => 'El producto no se ha actualizado',
+                    'code' => 400,
+                ], 400);
+            }
+
+            $validatedData = $validator->validated();
+
+            // Buscar el producto por ID
+            $product = Product::findOrFail($identifier);
+
+            // Actualizar los valores con los datos validados
+            $product->update([
+                'category_id' => encryptor::decrypt($request->input("category_id")),
+                'model_id' => encryptor::decrypt($request->input("model_id")),
+                'size_id' => encryptor::decrypt($request->input("size_id")),
+                'product_name' => $validatedData["product_name"],
+                'product_purchase' => $validatedData["product_purchase"],
+                'product_sales' => $validatedData["product_sales"],
+                'product_profit' => $validatedData["product_sales"] - $validatedData["product_purchase"],
+                'is_hot_sale' => $validatedData["is_hot_sale"] 
+            ]);
+
+            return response()->json([
+                'error' => null,
+                'success' => true,
+                'message' => 'Producto actualizado exitosamente',
+                'code' => 200,
+                'data' => show_product_resource::make($product),
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+                'success' => false,
+                'message' => 'Error al actualizar el producto',
+                'code' => 500,
+            ], 500);
         }
     }
 
@@ -160,14 +228,6 @@ class product_controller extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
@@ -196,8 +256,8 @@ class product_controller extends Controller
             }
 
             $sale = dt_sales::where('product_id', $product->product_id)->first();
-        
-            if($sale){
+
+            if ($sale) {
                 return response()->json([
                     'error' =>  "El producto ya se vendio",
                     'success' => false,
@@ -230,7 +290,7 @@ class product_controller extends Controller
         try {
             $product = Product::find(Encryptor::decrypt($identifier));
 
-            
+
             if (!$product) {
                 return response()->json([
                     'error' =>  "Error al imprimir",
@@ -240,16 +300,16 @@ class product_controller extends Controller
                 ], 404);
             }
 
- 
+
             // URL a la que deseas hacer la solicitud
             // $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
             $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
- 
+
             // Datos que deseas enviar en la solicitud POST
             $postData = array(
-                'barcode' => $product->barcode, 
+                'barcode' => $product->barcode,
                 'price' => $product->product_sales,
-                'product_name' => $product->product_name ." " . $product->size->size_name,
+                'product_name' => $product->product_name . " " . $product->size->size_name,
             );
 
             // Inicializar cURL
@@ -273,7 +333,7 @@ class product_controller extends Controller
             // Ejecutar la solicitud y obtener la respuesta
             $response = curl_exec($ch);
 
-            
+
 
             // Verificar si hubo errores
             if (curl_errno($ch)) {
@@ -281,7 +341,7 @@ class product_controller extends Controller
             }
 
             // Cerrar la conexión cURL
-            curl_close($ch); 
+            curl_close($ch);
 
             return response()->json([
                 'error' =>   null,
@@ -290,7 +350,6 @@ class product_controller extends Controller
                 'code' => 200,
                 'data' => product_resource::make($product),
             ], 200);
-
         } catch (\Throwable $e) {
             $code = 401;
             return response()->json([

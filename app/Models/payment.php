@@ -17,4 +17,5 @@ class payment extends Model
     {
         return $this->hasOne(account::class, 'account_id', 'account_id');
     }
+ 
 }

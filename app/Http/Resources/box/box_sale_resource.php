@@ -15,7 +15,7 @@ class box_sale_resource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-       return [
+        return [ 
             'identifier' => encryptor::encrypt($this->box_id),
             'reference' => $this->reference,
         ];

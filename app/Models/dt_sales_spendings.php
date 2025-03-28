@@ -16,6 +16,6 @@ class dt_sales_spendings extends Model
 
     public function payment()
     {
-        return $this->belongsTo(payment::class);
-    }
+        return $this->belongsTo(payment::class, 'payment_id', 'payment_id')->withTrashed();
+    } 
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Resources\dt_sales_payments;
+namespace App\Http\Resources\payment;
 
-use App\Http\Resources\payments\payments_sale_resource;
+use App\Http\Resources\account\account_resource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class dt_sales_payments_resource extends JsonResource
+class payment_resource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,8 +15,9 @@ class dt_sales_payments_resource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [ 
-            "payment" => payments_sale_resource::make($this->payment),
+        return [
+            'amount' => $this->amount,
+            'account' => account_resource::make($this->account),
         ];
     }
 }

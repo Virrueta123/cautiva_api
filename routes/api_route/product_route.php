@@ -11,3 +11,6 @@ Route::get('/product/{identifier}', [product_controller::class, 'show']);
 Route::get('/product/barcode_print/{identifier}', [product_controller::class, 'barcode_print']);
 
 Route::get('/product/barcode/{barcode}', [product_controller::class, 'barcode']); 
+
+//actualizar producto
+Route::patch('/product/{identifier}', [product_controller::class, 'update']);

@@ -32,6 +32,7 @@ class show_product_resource extends JsonResource
             'model' => model_resource::make($this->model),
             'user' => user_resource::make($this->user),
             'size' => select_size_resource::make($this->size),
+            'is_hot_sale' => $this->is_hot_sale,
         ];
     }
 }

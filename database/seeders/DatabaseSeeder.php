@@ -10,6 +10,7 @@ use App\Models\client;
 use App\Models\config;
 use App\Models\modell;
 use App\Models\size;
+use App\Models\spending_type;
 use Carbon\Carbon;
 use Database\Factories\product_factory;
 use Database\Factories\user_factory;
@@ -39,6 +40,8 @@ class DatabaseSeeder extends Seeder
         // registro establecidos
 
         // $first_user =  user_factory::new()->count(1)->create()->first();
+        $timestamp = ["created_at" => Carbon::now()->format("Y-m-d H:i:s"), "updated_at" => Carbon::now()->format("Y-m-d H:i:s")];
+
 
         $first_user = User::create([
             'name' => 'Olga',
@@ -74,7 +77,6 @@ class DatabaseSeeder extends Seeder
             'remember_token' => Str::random(10),
         ]);
 
-        $timestamp = ["created_at" => Carbon::now()->format("Y-m-d H:i:s"), "updated_at" => Carbon::now()->format("Y-m-d H:i:s")];
 
 
         //created categories
@@ -84,7 +86,6 @@ class DatabaseSeeder extends Seeder
             ['category_name' => 'Estilo Urbano', 'category_description' => "Ropa influenciada por la cultura urbana", 'created_by' => $first_user->id],
             ['category_name' => 'Vintage', 'category_description' => "Ropa de épocas pasadas", 'created_by' => $first_user->id],
         ];
-
 
         // Agregar timestamps a cada registro
         $list_categories = array_map(function ($category) use ($timestamp) {
@@ -165,7 +166,7 @@ class DatabaseSeeder extends Seeder
         // Combinar arrays
         $list_config = array_merge($list_config, $timestamp);
         config::insert($list_config);
-       
+
         // create new sending type 
 
         category::insert($list_categories);
@@ -173,6 +174,7 @@ class DatabaseSeeder extends Seeder
         account::insert($list_accounts);
 
         if (!app()->environment('production')) {
+
             product_factory::new()->count(50)->create();
             \Database\Factories\client_factory::new()->count(50)->create();
         }

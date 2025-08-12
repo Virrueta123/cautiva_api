@@ -172,7 +172,7 @@ class product_controller extends Controller
                 'product_purchase' => $validatedData["product_purchase"],
                 'product_sales' => $validatedData["product_sales"],
                 'product_profit' => $validatedData["product_sales"] - $validatedData["product_purchase"],
-                'is_hot_sale' => $validatedData["is_hot_sale"] 
+                'is_hot_sale' => $validatedData["is_hot_sale"]
             ]);
 
             return response()->json([
@@ -230,9 +230,88 @@ class product_controller extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $identifier)
     {
-        //
+        try {
+
+            $sale = ::find(encryptor::decrypt($identifier));
+
+            if (!$sale) {
+                return response()->json([
+                    'error' =>  "Venta no encontrado",
+                    'success' => false,
+                    'message' => 'Venta no encontrado',
+                    'code' => 404,
+                ], 404);
+            }
+
+            if ($sale->estado == "D") {
+                return response()->json([
+                    'error' =>  "Venta ya anulada",
+                    'success' => false,
+                    'message' => 'Venta ya anulada',
+                    'code' => 404,
+                ]);
+            }
+
+            if ($sale->tipo_documento == "N") {
+                $sale->fecha_baja = Carbon::now()->format('Y-m-d H:i:s');
+                $sale->motivo_cancelacion = $request->input('motivo');
+                $sale->estado = "D";
+                $sale->save();
+
+                //eleimnar productos en el dt_sale
+                dt_sales::where('sale_id', $sale->sale_id)->delete();
+
+                //eleiminar los payments
+                dt_sales_payments::where('sale_id', $sale->sale_id)->each(function ($dtSalePayment) {
+                    $dtSalePayment->payment->delete(); // Eliminar cada pago relacionado
+                });
+
+                //eleiminar pagos en el dt_sales_payments
+                dt_sales_payments::where('sale_id', $sale->sale_id)->delete();
+
+                return response()->json([
+                    'error' =>  "Venta anulada exitosamente",
+                    'success' => true,
+                    'message' => 'Operacion  exitosamente',
+                    'code' => 200,
+                ], 200);
+            }
+
+            $unsubscribeTicket = $this->greenterService->unsubscribeTicket(
+                $sale->correlativo,
+                $request->input('motivo'),
+                $sale->serie
+            );
+
+            if ($unsubscribeTicket["success"]) {
+                $sale->estado = "D";
+                $sale->save();
+
+                return response()->json([
+                    'error' =>   null,
+                    'success' => true,
+                    'message' => 'Venta anulada exitosamente',
+                    'code' => 200,
+                ], 200);
+            } else {
+                return response()->json([
+                    'error' =>  "Error al anular la venta",
+                    'success' => false,
+                    'message' => 'Error al anular la venta',
+                    'code' => 400,
+                ], 400);
+            }
+        } catch (\Throwable $th) {
+            $code = 401;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'success' => false,
+                'message' => 'Error al mostrar el venta',
+                'code' => $code,
+            ], $code);
+        }
     }
 
     /**
@@ -302,8 +381,8 @@ class product_controller extends Controller
 
 
             // URL a la que deseas hacer la solicitud
-            // $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
-            $url = 'https://explicitly-alert-toad.ngrok-free.app/print_script/public/ipc';
+            // $url = 'https://fowl-sacred-strangely.ngrok-free.app/print_script/public/ipc';
+            $url = 'https://fowl-sacred-strangely.ngrok-free.app/print_script/public/ipc';
 
             // Datos que deseas enviar en la solicitud POST
             $postData = array(

@@ -14,3 +14,6 @@ Route::get('/product/barcode/{barcode}', [product_controller::class, 'barcode'])
 
 //actualizar producto
 Route::patch('/product/{identifier}', [product_controller::class, 'update']);
+
+// delete producto
+Route::delete('/product/{identifier}', [product_controller::class, 'destroy']); 

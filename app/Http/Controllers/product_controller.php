@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Resources\product\product_resource;
 use App\Http\Resources\product\show_product_resource;
 use App\Models\dt_sales;
+use App\Models\dt_sales_payments;
 use App\Models\product;
 use App\Rules\price_decimal;
 use App\Utils\encryptor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -234,9 +236,9 @@ class product_controller extends Controller
     {
         try {
 
-            $sale = ::find(encryptor::decrypt($identifier));
+            $product = Product::find(encryptor::decrypt($identifier));
 
-            if (!$sale) {
+            if (!$product) {
                 return response()->json([
                     'error' =>  "Venta no encontrado",
                     'success' => false,
@@ -245,64 +247,85 @@ class product_controller extends Controller
                 ], 404);
             }
 
-            if ($sale->estado == "D") {
+            $product_delete = $product->delete();
+
+            if (!$product_delete) {
                 return response()->json([
-                    'error' =>  "Venta ya anulada",
+                    'error' =>  "Error al eliminar el producto",
                     'success' => false,
-                    'message' => 'Venta ya anulada',
+                    'message' => 'Error al eliminar el producto',
                     'code' => 404,
-                ]);
-            }
-
-            if ($sale->tipo_documento == "N") {
-                $sale->fecha_baja = Carbon::now()->format('Y-m-d H:i:s');
-                $sale->motivo_cancelacion = $request->input('motivo');
-                $sale->estado = "D";
-                $sale->save();
-
-                //eleimnar productos en el dt_sale
-                dt_sales::where('sale_id', $sale->sale_id)->delete();
-
-                //eleiminar los payments
-                dt_sales_payments::where('sale_id', $sale->sale_id)->each(function ($dtSalePayment) {
-                    $dtSalePayment->payment->delete(); // Eliminar cada pago relacionado
-                });
-
-                //eleiminar pagos en el dt_sales_payments
-                dt_sales_payments::where('sale_id', $sale->sale_id)->delete();
-
-                return response()->json([
-                    'error' =>  "Venta anulada exitosamente",
-                    'success' => true,
-                    'message' => 'Operacion  exitosamente',
-                    'code' => 200,
-                ], 200);
-            }
-
-            $unsubscribeTicket = $this->greenterService->unsubscribeTicket(
-                $sale->correlativo,
-                $request->input('motivo'),
-                $sale->serie
-            );
-
-            if ($unsubscribeTicket["success"]) {
-                $sale->estado = "D";
-                $sale->save();
+                ], 404);
+            }else{
 
                 return response()->json([
                     'error' =>   null,
-                    'success' => true,
-                    'message' => 'Venta anulada exitosamente',
+                   'success' => true,
+                   'message' => 'Producto eliminado exitosamente',
                     'code' => 200,
-                ], 200);
-            } else {
-                return response()->json([
-                    'error' =>  "Error al anular la venta",
-                    'success' => false,
-                    'message' => 'Error al anular la venta',
-                    'code' => 400,
-                ], 400);
+                ]);
             }
+
+            
+
+            // if ($sale->estado == "D") {
+            //     return response()->json([
+            //         'error' =>  "Venta ya anulada",
+            //         'success' => false,
+            //         'message' => 'Venta ya anulada',
+            //         'code' => 404,
+            //     ]);
+            // }
+
+            // if ($sale->tipo_documento == "N") {
+            //     $sale->fecha_baja = Carbon::now()->format('Y-m-d H:i:s');
+            //     $sale->motivo_cancelacion = $request->input('motivo');
+            //     $sale->estado = "D";
+            //     $sale->save();
+
+            //     //eleimnar productos en el dt_sale
+            //     dt_sales::where('sale_id', $sale->sale_id)->delete();
+
+            //     //eleiminar los payments
+            //     dt_sales_payments::where('sale_id', $sale->sale_id)->each(function ($dtSalePayment) {
+            //         $dtSalePayment->payment->delete(); // Eliminar cada pago relacionado
+            //     });
+
+            //     //eleiminar pagos en el dt_sales_payments
+            //     dt_sales_payments::where('sale_id', $sale->sale_id)->delete();
+
+            //     return response()->json([
+            //         'error' =>  "Venta anulada exitosamente",
+            //         'success' => true,
+            //         'message' => 'Operacion  exitosamente',
+            //         'code' => 200,
+            //     ], 200);
+            // }
+
+            // $unsubscribeTicket = $this->greenterService->unsubscribeTicket(
+            //     $sale->correlativo,
+            //     $request->input('motivo'),
+            //     $sale->serie
+            // );
+
+            // if ($unsubscribeTicket["success"]) {
+            //     $sale->estado = "D";
+            //     $sale->save();
+
+            //     return response()->json([
+            //         'error' =>   null,
+            //         'success' => true,
+            //         'message' => 'Venta anulada exitosamente',
+            //         'code' => 200,
+            //     ], 200);
+            // } else {
+            //     return response()->json([
+            //         'error' =>  "Error al anular la venta",
+            //         'success' => false,
+            //         'message' => 'Error al anular la venta',
+            //         'code' => 400,
+            //     ], 400);
+            // }
         } catch (\Throwable $th) {
             $code = 401;
             return response()->json([

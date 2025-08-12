@@ -384,6 +384,8 @@ class product_controller extends Controller
             // $url = 'https://fowl-sacred-strangely.ngrok-free.app/print_script/public/ipc';
             $url = 'https://fowl-sacred-strangely.ngrok-free.app/print_script/public/ipc';
 
+
+
             // Datos que deseas enviar en la solicitud POST
             $postData = array(
                 'barcode' => $product->barcode,

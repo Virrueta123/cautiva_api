@@ -6,6 +6,7 @@ use App\Http\Resources\login_resource;
 use App\Models\user;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -104,6 +105,7 @@ class auth_controller extends Controller
         } catch (\Throwable $th) {
             //throw $th;
             $code = 401;
+            Log::error($th->getMessage());
             return response()->json([
                 'error' => $th->getMessage(),
                 'success' => false,

@@ -37,4 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api_route/spending_route.php';
     require __DIR__ . '/api_route/spending_type_route.php';
     require __DIR__ . '/api_route/report_route.php';
+    require __DIR__ . '/api_route/config_route.php';
+    
 });

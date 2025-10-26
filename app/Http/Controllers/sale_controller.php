@@ -189,7 +189,7 @@ class sale_controller extends Controller
                 //     ], 401);
                 // }
 
-                $producto_descontado = $product["product_sales"] - $amount_discount;
+                $producto_descontado = $product["product_sales"];
                 array_push(
                     $create_dt_sale,
                     array(
@@ -207,7 +207,7 @@ class sale_controller extends Controller
                         "Descripcion" => $product["product_name"] . " " . $product["category"]["category_name"] . " " . $product["size"]["size_name"],
                         "TipAfeIgv" => '20',
                         "BaseIgv" => 0,
-                        "discount" => $amount_discount,
+                        "discount" => 0,
                     )
                 );
             }

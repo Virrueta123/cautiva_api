@@ -540,8 +540,7 @@ class sale_controller extends Controller
                     ]
                 );
 
-                // Generar el PDF
-                return  $pdf->stream();
+                
 
                 // Codificar el contenido del PDF en base64
                 $pdfContent = base64_encode($pdf->output());

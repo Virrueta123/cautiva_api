@@ -282,7 +282,7 @@ class box_controller extends Controller
                     ], 400);
                 }
 
-                if ($box->sendings_amount->count() > 0 || $box->sales_amount->count() > 0) {
+                if ($box->spending_amount->count() > 0 || $box->sales_amount->count() > 0) {
                     return response()->json([
                         'error' =>  "La caja tiene ingresos o gastos, no puede eliminarse",
                         'success' => false,
@@ -336,7 +336,7 @@ class box_controller extends Controller
                 }
 
                 // si la caja no tiene ningun ingreso o gasto no se puede cerrar
-                if ($box->sendings_amount->count() == 0 && $box->sales_amount->count() == 0) {
+                if ($box->spending_amount->count() == 0 && $box->sales_amount->count() == 0) {
                     return response()->json([
                         'error' =>  "La caja no tiene ingresos ni gastos",
                         'success' => false,
@@ -347,7 +347,7 @@ class box_controller extends Controller
 
                 $box->status = "C";
                 $box->closing_date = Carbon::now();
-                $box->final_balance = ($box->sales_amount->sum('amount') - $box->sendings_amount->sum('amount')) + $box->initial_balance;
+                $box->final_balance = ($box->sales_amount->sum('amount') - $box->spending_amount->sum('amount')) + $box->initial_balance;
                 $box->save();
 
                 return response()->json([

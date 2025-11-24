@@ -4,7 +4,7 @@ namespace App\Services;
 class print_services
 {
 
-    private $url = 'http://print_script.test/impimir_voucher_cautiva_comprobante';
+    private $url = 'https://fowl-sacred-strangely.ngrok-free.app/print_script/public/impimir_voucher_cautiva_comprobante';
 
     public function print_voucher($serie, $correlativo, $fecha, $cliente, $detalle, $subtotal, $descuento, $total)
     {

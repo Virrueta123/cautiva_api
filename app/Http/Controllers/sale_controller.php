@@ -11,6 +11,7 @@ use App\Models\dt_sales_payments;
 use App\Models\payment;
 use App\Models\sale;
 use App\Services\greenter_service;
+use App\Services\print_services;
 use App\Utils\correlativo;
 use App\Utils\encryptor;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -92,6 +93,42 @@ class sale_controller extends Controller
                 'error'   => $e->getMessage(),
                 'success' => false,
                 'message' => 'Hubo un error al convertir el certificado',
+                'code'    => 500,
+            ], 500);
+        }
+    }
+
+    public function print_voucher($identificador)
+    {
+        try {
+            $sale           = sale::find(encryptor::decrypt($identificador));
+            $print_services = new print_services();
+
+            /** [   {     "producto": "Vestido con diseño DKNY Vestido L",     "cantidad": 1,     "precio": 38.00   },   {     "producto": "Vestido verde olive AVENUE Vestido L XL",     "cantidad": 1,     "precio": 35.00   },   {     "producto": "Vestido Floreado SWARNA Vestido L",     "cantidad": 2,     "precio": 75.00   } ] */
+
+            $productos = [];
+            foreach ($sale->dt_sale as $dt_sale) {
+                array_push($productos, [
+                    "producto" => $dt_sale->Descripcion,
+                    "cantidad" => $dt_sale->Cantidad,
+                    "precio"   => $dt_sale->MtoValorVenta,
+                ]);
+
+            }
+
+                    $print_services->print_voucher($sale->serie, $sale->correlativo, Carbon::parse($sale->created_at)->format('d/m/Y'), $sale->setNombre, $productos, $sale->subtotal, $sale->descuento, $sale->total);
+
+            return response()->json([
+                'error'   => null,
+                'success' => true,
+                'message' => 'Imprimiendo voucher exitosamente',
+                'code'    => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error'   => $e->getMessage(),
+                'success' => false,
+                'message' => 'Hubo un error al imprimir el voucher',
                 'code'    => 500,
             ], 500);
         }
@@ -331,6 +368,21 @@ class sale_controller extends Controller
                     $this->insertPayment($request->input('payment_model'), $sale, $box_id, $userId);
                     dt_sales::insert($create_dt_sale);
 
+                    // imprimir voucher
+                    $print_services = new print_services(); 
+
+                    $productos = [];
+                    foreach ($sale->dt_sale as $dt_sale) {
+                        array_push($productos, [
+                            "producto" => $dt_sale->Descripcion,
+                            "cantidad" => $dt_sale->Cantidad,
+                            "precio"   => $dt_sale->MtoValorVenta,
+                        ]);
+
+                    }
+
+                    $print_services->print_voucher($sale->serie, $sale->correlativo, Carbon::parse($sale->created_at)->format('d/m/Y'), $sale->setNombre, $productos, $sale->subtotal, $sale->descuento, $sale->total);
+
                     return response()->json([
                         'error'   => null,
                         'success' => true,
@@ -341,6 +393,7 @@ class sale_controller extends Controller
 
                     break;
             }
+
         } catch (\Throwable $th) {
             $code = 401;
             return response()->json([
@@ -437,9 +490,9 @@ class sale_controller extends Controller
             return response()->json([
                 "data"    => [
                     "date"          => $date,
-                    "total_sales"   => number_format($sales->sum('total')) ,
-                    "total_cash"    =>  number_format($sales->where('payment_type', 'EFECTIVO')->sum('total')),
-                    "total_account" =>  number_format($sales->where('payment_type', 'CUENTA')->sum('total')),
+                    "total_sales"   => number_format($sales->sum('total')),
+                    "total_cash"    => number_format($sales->where('payment_type', 'EFECTIVO')->sum('total')),
+                    "total_account" => number_format($sales->where('payment_type', 'CUENTA')->sum('total')),
                     "total_items"   => $sales->count(),
                     "list"          => sale_index_resource::collection($sales),
                 ],
